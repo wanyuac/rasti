@@ -15,6 +15,7 @@ import sys
 import subprocess
 from distutils import spawn
 from collections import namedtuple
+from lib.Hit import HIT_TABLE_COLS
 
 BLAST_parameters = namedtuple('BLAST_parameters', ['min_identity', 'min_qcov', 'max_evalue', 'max_hits'])
 
@@ -25,7 +26,7 @@ class BLAST:
         self.__query_fasta = query_fasta  # Fasta file of query sequences
         self.__params = BLAST_parameters(str(min_identity), str(min_qcov), max_evalue, str(max_hits))
         return
-    
+
     @property
     def query_fasta(self):
         return self.__query_fasta
@@ -33,51 +34,38 @@ class BLAST:
     @property
     def params(self):
         return self.__params
-    
+
     def search(self, subject_name, subject_fasta, outdir):
-        """ Search query sequences against a database of the subject sequence using megaBLAST """
-        output_tsv = os.path.join(outdir, subject_name + '__megaBLAST.tsv')
-        header = ' '.join(['6', 'qseqid', 'sseqid', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend',\
-                           'sstart', 'send', 'sstrand', 'evalue', 'bitscore', 'sseq'])
+        """
+        Search query sequences against a database of the subject sequence using megaBLAST
+        Return: content of a tsv file for BLAST results of the current sample
+        """
+        header = HIT_TABLE_COLS + ['sseq']
         blastn_command = ['blastn', '-task', 'megablast', '-query', self.__query_fasta, '-subject', subject_fasta,\
-                          '-out', output_tsv, '-perc_identity', self.__params.min_identity, '-qcov_hsp_perc', self.__params.min_qcov,\
-                          '-evalue', self.__params.max_evalue, '-max_target_seqs', self.__params.max_hits, '-outfmt', header]
+                          '-perc_identity', self.__params.min_identity, '-qcov_hsp_perc', self.__params.min_qcov,\
+                          '-evalue', self.__params.max_evalue, '-max_target_seqs', self.__params.max_hits, '-outfmt', ' '.join(['6'] + header)]
         process = subprocess.Popen(blastn_command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        _, err = process.communicate()  # obtain outcomes (out and err) as two long strings (in bytes class though)
-        #out = out.decode()
+        out, err = process.communicate()  # Obtain outcomes (out and err) as two long strings (in bytes class though)
+        out = out.decode()
         err = err.decode()
         if len(err) > 0:
             print("\nblastn encountered an error:", file = sys.stderr)
             print(err, file = sys.stderr)
             sys.exit(1)
-        return
+        output_tsv = open(os.path.join(outdir, subject_name + '__megaBLAST.tsv'), 'w')  # Save raw BLAST outputs to subdirectory 1_blast
+        if len(out) > 0:
+            output_tsv.write('\t'.join(header) + "\n")
+            output_tsv.write(out)
+            out = out.splitlines()  # Convert lines into a list
+        else:
+            print(f"Warning (blast.search): no match of any query sequences was found in sample {subject_name} and therefore, no result file will be produced.", file = sys.stderr)
+            out = None
+        output_tsv.close()  # Leaves an empty file if len(out) = 0
+        return out
 
     def check_executives(self):
-        #makeblastdb_path = spawn.find_executable("makeblastdb")
         blastn_path = spawn.find_executable("blastn")
-        #blast_installed = (makeblastdb_path != None and blastn_path != None)
-        #if not blast_installed:
         if blastn_path == None:
             print("Error: could not find executives of BLAST.", file = sys.stderr)
             sys.exit(1)
         return
-
-    """
-    def make_blast_db(self, db_dir, subject_name, subject_fasta):
-        ''' Create a BLAST nucleotide database in directory db_dir (not needed for a search between two FASTA files) '''
-        db = os.path.join(db_dir, subject_name)
-        makeblastdb_command = ['makeblastdb', '-dbtype', 'nucl', '-in', subject_fasta, '-out', db]
-        process = subprocess.Popen(makeblastdb_command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        _, err = process.communicate()  # Return bytes not strings
-        err = err.decode()  # Convert bytes into a string
-        if len(err) > 0:
-            print("\nmakeblastdb encountered an error:", file = sys.stderr)
-            print(err, file = sys.stderr)
-            sys.exit(1)
-        return db
-
-    def clean(db):
-        ''' Delete database files *.ndb, *.nhr, *.nin, etc. '''
-        subprocess.run(f'rm {db}.*', shell = True)
-        return
-    """
