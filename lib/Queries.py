@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This module defines class Queries for labas.
+This module defines class Queries.
 
 Dependencies: Python 3
 

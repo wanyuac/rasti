@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This module defines class BLAST for labas.
+This module defines class BLAST.
 
 Dependencies: BLAST+, BioPython, Python 3
 

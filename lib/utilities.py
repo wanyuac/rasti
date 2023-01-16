@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Miscellaneous functions for labas
+Miscellaneous functions
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This module defines class Seq for labas.
+This module defines class Seq.
 
 Dependencies: Python 3
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This module defines class Hit for labas.
+This module defines class Hit.
 
 Dependencies: Python 3
 

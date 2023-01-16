@@ -5,7 +5,7 @@ MegaBLAST-based search of query sequences against genome assemblies.
 
 Dependencies: BLAST+, BioPython, Python 3
 
-Example command: labas/labas.py --query query/query_genes.fna --genomes *.fna
+Example command: rasti.py --query query/query_genes.fna --genomes *.fna
 
 Note: this script cannot grep FASTA files for --genomes on Windows OS. Please use Windows's Linux subsystem to run this script.
 
