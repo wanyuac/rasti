@@ -5,17 +5,18 @@ MegaBLAST-based search of query sequences against genome assemblies.
 
 Dependencies: BLAST+, BioPython, Python 3
 
-Example command: rasti.py --query query/query_genes.fna --genomes *.fna
+Example command: rasti.py --query query/query_genes.fna --genomes *.fna --pause 0.05
 
 Note: this script cannot grep FASTA files for --genomes on Windows OS. Please use Windows's Linux subsystem to run this script.
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 15 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 16 Jan 2023.
 """
 
 import os
 import sys
+from time import sleep
 from argparse import ArgumentParser
 from lib.Queries import Queries
 from lib.BLAST import BLAST
@@ -32,6 +33,7 @@ def parse_arguments():
     parser.add_argument('--min_qcov', '-mq', dest = 'min_qcov', type = float, default = 80.0, required = False, help = "Minimum percent query coverage for BLAST to identify a match (Default: 80.0; range: 0-100)")
     parser.add_argument('--max_evalue', '-me', dest = 'max_evalue', type = str, default = '1e-5', required = False, help = "Maximum E-value for BLAST to identify a match (Default: 1e-5)")
     parser.add_argument('--max_match_num', '-mh', dest = 'max_match_num', type = int, default = 5, required = False, help = "Maximum number of matches reported by BLAST for each query sequence (Default: 5; Range: 1-500)")
+    parser.add_argument('--pause', '-p', dest = 'pause', type = float, default = 0, required = False, help = "Seconds to be paused between BLAST searches (Default: 0; range: 0-60).")
     return parser.parse_args()
 
 
@@ -56,6 +58,8 @@ def main ():
     else:
         print("Error: none of input genomes exists.", file = sys.stderr)
         sys.exit(1)
+    delay_sec = args.pause
+    delay_iterations = (delay_sec > 0 and delay_sec < 60)
 
     # Iteratively run megaBLAST through genomes
     blast_out_dir = out_dirs['blast']
@@ -64,6 +68,8 @@ def main ():
     hit_tables = Hit_tables()
     for g, fasta in genomes.items():
         hit_tables.add_table(sample = g, hit_table = blast.search(subject_name = g, subject_fasta = fasta, outdir = blast_out_dir))  # Method blast.search may return None when no hit is found in a subject genome.
+        if delay_iterations:
+            sleep(delay_sec)
     parsed_out_dir = out_dirs['parsed']
     hit_tables.compile_tables(outdir = parsed_out_dir)  # Compile BLAST outputs across all samples into one TSV file
     for q in queries.query_names:  # Create a multi-FASTA file for each query sequence
