@@ -15,7 +15,7 @@ import sys
 import subprocess
 from distutils import spawn
 from collections import namedtuple
-from lib.Hit import HIT_TABLE_COLS
+from lib.Hit import HIT_ATTRS
 
 BLAST_parameters = namedtuple('BLAST_parameters', ['min_identity', 'min_qcov', 'max_evalue', 'max_hits'])
 
@@ -38,9 +38,10 @@ class BLAST:
     def search(self, subject_name, subject_fasta, outdir):
         """
         Search query sequences against a database of the subject sequence using megaBLAST
-        Return: content of a tsv file for BLAST results of the current sample
+        Return: content of a tsv file for BLAST results of the current sample if any hit is found;
+        otherwise, returns None.
         """
-        header = HIT_TABLE_COLS + ['sseq']
+        header = ['qseqid', 'sseqid'] + HIT_ATTRS + ['sseq']
         blastn_command = ['blastn', '-task', 'megablast', '-query', self.__query_fasta, '-subject', subject_fasta,\
                           '-perc_identity', self.__params.min_identity, '-qcov_hsp_perc', self.__params.min_qcov,\
                           '-evalue', self.__params.max_evalue, '-max_target_seqs', self.__params.max_hits, '-outfmt', ' '.join(['6'] + header)]

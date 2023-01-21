@@ -5,13 +5,13 @@ MegaBLAST-based search of query sequences against genome assemblies.
 
 Dependencies: BLAST+, BioPython, Python 3
 
-Example command: rasti.py --query query/query_genes.fna --genomes *.fna --pause 0.05
+Example command: rasti.py --query query/query_genes.fna --genomes *.fna --min_qcov 0 --pause 0.05
 
 Note: this script cannot grep FASTA files for --genomes on Windows OS. Please use Windows's Linux subsystem to run this script.
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 16 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 21 Jan 2023.
 """
 
 import os
@@ -33,7 +33,7 @@ def parse_arguments():
     parser.add_argument('--min_qcov', '-mq', dest = 'min_qcov', type = float, default = 80.0, required = False, help = "Minimum percent query coverage for BLAST to identify a match (Default: 80.0; range: 0-100)")
     parser.add_argument('--max_evalue', '-me', dest = 'max_evalue', type = str, default = '1e-5', required = False, help = "Maximum E-value for BLAST to identify a match (Default: 1e-5)")
     parser.add_argument('--max_match_num', '-mh', dest = 'max_match_num', type = int, default = 5, required = False, help = "Maximum number of matches reported by BLAST for each query sequence (Default: 5; Range: 1-500)")
-    parser.add_argument('--pause', '-p', dest = 'pause', type = float, default = 0, required = False, help = "Seconds to be paused between BLAST searches (Default: 0; range: 0-60).")
+    parser.add_argument('--pause', '-p', dest = 'pause', type = float, default = 0.2, required = False, help = "Seconds to be paused between BLAST searches (Default: 0.2; range: 0-60).")
     return parser.parse_args()
 
 

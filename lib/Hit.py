@@ -7,16 +7,15 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 15 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 21 Jan 2023.
 """
 
 from collections import namedtuple
 from lib.Seq import Seq
 
-HIT_TABLE_COLS = ['qseqid', 'sseqid', 'qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen',\
-                  'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']  # 16 fields (excluding the 17th column sseq)
+HIT_ATTRS = ['qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']
 
-Hit_attr = namedtuple('Hit_attr', HIT_TABLE_COLS[2 : ])  # from 'qlen' to 'bitscore'
+Hit_attrs = namedtuple('Hit_attr', HIT_ATTRS)  # from 'qlen' to 'bitscore'
 
 class Hit:
     """
@@ -33,16 +32,23 @@ class Hit:
         """
         fields = hit_line.split('\t') if hit_line != None else [None] * 17
         self.__sample = sample  # Name of the subject genome
-        self.__query = fields[0]  # Name of the query sequence ('qseqid')
+        self.__query = fields[0]  # Name of the query sequence used for BLAST ('qseqid')
         self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft genome, a complete genome, etc) ('sseqid')
-        self.__attr = Hit_attr(qlen = int(fields[2]), slen = int(fields[3]), pident = float(fields[4]), qcovhsp = float(fields[5]), length = int(fields[6]),\
-                               mismatch = int(fields[7]), gapopen = int(fields[8]), qstart = int(fields[9]), qend = int(fields[10]), sstart = int(fields[11]),\
-                               send = int(fields[12]), sstrand = '+' if fields[13] == 'plus' else '-', evalue = fields[14], bitscore = fields[15])
-        self.__sseq = Seq(seqid = '.'.join([self.__query, self.__sample]) if append_sample_name else self.__query,\
-                          descr = '|'.join([self.__query, self.__sample, self.__contig, str(self.__attr.sstart) + '-' + str(self.__attr.send), self.__attr.sstrand]),\
-                          seq = fields[16].replace('-', ''))  # Aligned part of subject sequence, with gap characters '-' removed.
+        self.__hit = '@'.join([self.__query, self.__sample]) if append_sample_name else self.__query  # Hit ID. For instance, gene1@sample1.
+        self.__attr = Hit_attrs(qlen = int(fields[2]), slen = int(fields[3]), pident = float(fields[4]), qcovhsp = float(fields[5]), length = int(fields[6]),\
+                                mismatch = int(fields[7]), gapopen = int(fields[8]), qstart = int(fields[9]), qend = int(fields[10]), sstart = int(fields[11]),\
+                                send = int(fields[12]), sstrand = '+' if fields[13] == 'plus' else '-', evalue = fields[14], bitscore = fields[15])
+        if append_sample_name:
+            seq_descr = '|'.join([self.__contig, str(self.__attr.sstart) + '-' + str(self.__attr.send), self.__attr.sstrand])
+        else:
+            seq_descr = '|'.join([self.__sample, self.__contig, str(self.__attr.sstart) + '-' + str(self.__attr.send), self.__attr.sstrand])
+        self.__sseq = Seq(seqid = self.__hit, descr = seq_descr, seq = fields[16].replace('-', ''))  # Aligned part of subject sequence, with gap characters '-' removed.
         return
     
+    @property
+    def hit(self):
+        return self.__hit
+
     @property
     def sample(self):
         return self.__sample
@@ -68,6 +74,11 @@ class Hit:
         return [self.__query, self.__contig, str(self.__attr.qlen), str(self.__attr.slen), str(self.__attr.pident), str(self.__attr.qcovhsp),\
                 str(self.__attr.length), str(self.__attr.mismatch), str(self.__attr.gapopen), str(self.__attr.qstart), str(self.__attr.qend),\
                 str(self.__attr.sstart), str(self.__attr.send), self.__attr.sstrand, self.__attr.evalue, self.__attr.bitscore]
+
+    def set_hitid(self, new_id):
+        self.__hit = new_id
+        self.__sseq.set_seqid(new_id = self.__hit)
+        return
 
     def write_seq(self, fasta_handle):
         """
