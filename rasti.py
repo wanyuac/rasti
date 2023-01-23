@@ -43,7 +43,8 @@ def main ():
     args = parse_arguments()
 
     # Environmental settings and sanity check
-    out_dirs = {'root' : args.outdir, 'blast' : os.path.join(args.outdir, '1_blast'), 'parsed' : os.path.join(args.outdir, '2_parsed')}
+    out_dirs = {'root' : args.outdir, 'blast' : os.path.join(args.outdir, '1_blast'), 'parsed' : os.path.join(args.outdir, '2_parsed'),\
+                'extended' : os.path.join(args.outdir, '3_extended')}
     for d in out_dirs.values():
         check_dir(d)
     if check_file(f = args.query, message = True):
@@ -86,6 +87,10 @@ def main ():
         hit_tables.write_hit_sequences(query = q, outdir = parsed_out_dir)
 
     # Extend hits of CDSs to recover alternative start and stop codons
+    cds = queries.cds
+    if len(cds) > 0:
+        ext_out_dir = out_dirs['extended']
+        hit_tables.extend_hits(subjects = genomes, cds = cds)
     return
 
 

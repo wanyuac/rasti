@@ -7,15 +7,17 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 21 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 23 Jan 2023.
 """
 
 from collections import namedtuple
-from lib.Seq import Seq
+from lib.Sequence import Sequence
+from Bio import SeqIO
 
 HIT_ATTRS = ['qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']
-
 Hit_attrs = namedtuple('Hit_attr', HIT_ATTRS)  # from 'qlen' to 'bitscore'
+CODON_TABLE_11_START = ['ATG', 'ATT', 'ATC', 'ATA', 'CTG', 'GTG', 'TTG']  # Bacterial, Archaeal and Plant Plastid Code (transl_table=11)
+CODON_TABLE_11_STOP = ['TAA', 'TAG', 'TGA']  # Sometimes the last one or two bases were missing from BLAST's output when an alternative stop codon is present.
 
 class Hit:
     """
@@ -42,7 +44,7 @@ class Hit:
             seq_descr = '|'.join([self.__contig, str(self.__attr.sstart) + '-' + str(self.__attr.send), self.__attr.sstrand])
         else:
             seq_descr = '|'.join([self.__sample, self.__contig, str(self.__attr.sstart) + '-' + str(self.__attr.send), self.__attr.sstrand])
-        self.__sseq = Seq(seqid = self.__hit, descr = seq_descr, seq = fields[16].replace('-', ''))  # Aligned part of subject sequence, with gap characters '-' removed.
+        self.__sseq = Sequence(seqid = self.__hit, descr = seq_descr, seq = fields[16].replace('-', ''))  # Aligned part of subject sequence, with gap characters '-' removed.
         return
     
     @property
@@ -63,7 +65,7 @@ class Hit:
     
     @property
     def sseq(self):
-        return self.__sseq  # A Seq object
+        return self.__sseq  # A Sequence object
 
     @property
     def attr(self):
@@ -87,4 +89,49 @@ class Hit:
         """
         print('>%s %s' % (self.__sseq.seqid, self.__sseq.description), file = fasta_handle)
         print(self.__sseq.seq, file = fasta_handle)
+        return
+    
+    def extend_cds(self, q, f):
+        """
+        Extend the current CDS to recover alternative start and stop codons
+        Parameters: q (name of the query sequence), f (path to the subject FASTA file)
+        """
+        if self.__attr.qcovhsp < 100:
+            qstart = self.__attr.qstart
+            qend = self.__attr.qend
+            qlen = self.__attr.qlen
+            start_ext = (qstart > 1 and qstart <= 4)
+            end_ext = (qend < qlen and qend >= (qlen - 2))
+            if start_ext or end_ext:
+                contig = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))[self.__contig]
+                if start_ext:
+                    self.__sseq = self.__extend_start(sstart = self.__attr.sstart, send = self.__attr.send, strand = self.__attr.sstrand,\
+                                                      contig = contig, by = qstart - 1)
+                if end_ext:
+                    self.__sseq = self.__extend_end(sstart = self.__attr.sstart, send = self.__attr.send, strand = self.__attr.sstrand,\
+                                                    contig = contig, by = qlen - qend)
+        return
+
+    def __extend_start(self, sstart, send, strand, contig, by):
+        """
+        A subordinate function for method 'extend_cds'
+        This function extends the hit towards upstream and returns a Sequence object.
+        Parameters:
+          sstart, original start position in the subject sequence
+          send, original end position in the subject sequence
+          contig: subject contig sequence
+          by, number of bases to extend
+        """
+        return
+
+    def __extend_end(self, sstart, send, strand, contig, by):
+        """
+        A subordinate function for method 'extend_cds'
+        This function extends the hit towards downstream and returns a Sequence object.
+        Parameters:
+          sstart, original start position in the subject sequence
+          send, original end position in the subject sequence
+          contig: subject contig sequence
+          by, number of bases to extend
+        """
         return

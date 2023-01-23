@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This module defines class Seq.
+This module defines class Sequence.
 
 Dependencies: Python 3
 
@@ -10,7 +10,7 @@ Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu
 Creation: 15 Jan 2023; the latest update: 15 Jan 2023.
 """
 
-class Seq:
+class Sequence:
     """ Manage a single sequence """
     def __init__(self, seqid, descr, seq):
         self.__seqid = seqid
