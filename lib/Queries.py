@@ -7,32 +7,45 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 15 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 23 Jan 2023.
 """
 
 from Bio import SeqIO
+from collections import namedtuple
+
+Query = namedtuple('Query', ['len', 'type'])  # Length (bp) and type (CDS, IS, etc)
 
 class Queries:
     """ Parse the FASTA file of query sequences and manage its sequence data """
     def __init__(self, fasta):
-        self.__qlens = dict()
-        qs = SeqIO.to_dict(SeqIO.parse(fasta, "fasta"))
-        for q, s in qs.items():
-            self.__qlens[q] = len(str(s.seq))
+        self.__queries = dict()
+        qs = SeqIO.to_dict(SeqIO.parse(fasta, 'fasta'))
+        for q, s in qs.items():  # Element 's' is a SeqRecord.
+            self.__queries[q] = Query(len = len(str(s.seq)), type = self.__extract_seq_type(s.description))
         return
     
     @property
     def query_names(self):
-        return list(self.__qlens.keys())
+        return list(self.__queries.keys())
 
     @property
     def query_num(self):
-        return len(self.__qlens)
+        return len(self.__queries)
+
+    def __extract_seq_type(self, h):
+        descr = h.split(' ')[1]
+        return descr.split('|')[0]
+
+    def query_len(self, q):
+        return self.__queries[q].len  # Value type: integer
+    
+    def query_type(self, q):
+        return self.__queries[q].type  # Value type: string
 
     def write_query_lengths(self, tsv):
         f = open(tsv, 'w')
-        f.write('\t'.join(["Query", "Length_bp"]) + '\n')
-        for q, l in self.__qlens.items():
-            f.write('\t'.join([q, str(l)]) + '\n')
+        f.write('\t'.join(["Query", "Type", "Length"]) + '\n')
+        for i, q in self.__queries.items():
+            f.write('\t'.join([i, q.type, str(q.len)]) + '\n')
         f.close()
         return

@@ -7,7 +7,7 @@ Dependencies: BLAST+, BioPython, Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 15 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 23 Jan 2023.
 """
 
 import os
@@ -56,12 +56,24 @@ class BLAST:
         output_tsv = open(os.path.join(outdir, subject_name + '__megaBLAST.tsv'), 'w')  # Save raw BLAST outputs to subdirectory 1_blast
         if len(out) > 0:
             output_tsv.write('\t'.join(header) + "\n")
-            output_tsv.write(out)
+            output_tsv.write(out)  # Value of 'out' is the multi-line content of the output TSV file.
             out = out.splitlines()  # Convert lines into a list
-        else:
+        else:  # Not TSV file is generated when no query sequence was found in the sample.
             print(f"Warning (blast.search): no match of any query sequences was found in sample {subject_name} and therefore, no result file will be produced.", file = sys.stderr)
             out = None
         output_tsv.close()  # Leaves an empty file if len(out) = 0
+        return out
+    
+    def import(self, subject_name, input_dir):
+        """ Load an existing BLAST output from input_dir for sample s """
+        tsv = os.path.join(input_dir, subject_name + '__megaBLAST.tsv')
+        if os.path.exists(tsv):
+            with open(tsv, 'r') as f:
+                out = f.read().splitlines()
+                out = out[1 : ]  # Skip the header line
+        else:
+            print(f"Warning (blast.import): BLAST output {tsv} was not found.", file = sys.stderr)
+            out = None
         return out
 
     def check_executives(self):
