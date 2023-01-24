@@ -100,38 +100,41 @@ class Hit:
             qstart = self.__attr.qstart
             qend = self.__attr.qend
             qlen = self.__attr.qlen
-            start_ext = (qstart > 1 and qstart <= 4)
-            end_ext = (qend < qlen and qend >= (qlen - 2))
-            if start_ext or end_ext:
-                contig = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))[self.__contig]
-                if start_ext:
-                    self.__sseq = self.__extend_start(sstart = self.__attr.sstart, send = self.__attr.send, strand = self.__attr.sstrand,\
-                                                      contig = contig, by = qstart - 1)
-                if end_ext:
-                    self.__sseq = self.__extend_end(sstart = self.__attr.sstart, send = self.__attr.send, strand = self.__attr.sstrand,\
-                                                    contig = contig, by = qlen - qend)
+            ext_start = (qstart > 1 and qstart <= 4)
+            ext_end = (qend < qlen and qend >= (qlen - 2))
+            if ext_start or ext_end:
+                contig = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))[self.__contig]  # Contig is a Bio::Seq object.
+                sstart = self.__attr.sstart
+                send = self.__attr.send
+                sstrand = self.__attr.sstrand
+                if ext_start:
+                    sstart, send, qstart = self.__extend_start(sstart = sstart, send = send, sstrand = sstrand, contig = contig, qstart = qstart)  # Extended the sequence if feasible
+                if ext_end:
+                    sstart, send, qend = self.__extend_end(sstart = sstart, send = send, sstrand = sstrand, contig = contig, qlen = qlen, qend = qend)
         return
 
-    def __extend_start(self, sstart, send, strand, contig, by):
+    def __extend_start(self, sstart, send, sstrand, contig, qstart):
         """
         A subordinate function for method 'extend_cds'
-        This function extends the hit towards upstream and returns a Sequence object.
+        This function extends the hit towards upstream and returns a Bio::Seq object.
         Parameters:
           sstart, original start position in the subject sequence
           send, original end position in the subject sequence
           contig: subject contig sequence
           by, number of bases to extend
         """
-        return
+        by = qstart - 1
+        return sstart_new, send_new, qstart_new
 
-    def __extend_end(self, sstart, send, strand, contig, by):
+    def __extend_end(self, sstart, send, sstrand, contig, qlen, qend):
         """
         A subordinate function for method 'extend_cds'
-        This function extends the hit towards downstream and returns a Sequence object.
+        This function extends the hit towards downstream and returns a Bio::Seq object.
         Parameters:
           sstart, original start position in the subject sequence
           send, original end position in the subject sequence
           contig: subject contig sequence
           by, number of bases to extend
         """
-        return
+        by = qlen - qend
+        return sstart_new, send_new, qend_new
