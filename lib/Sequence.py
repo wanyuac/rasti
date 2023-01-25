@@ -7,20 +7,20 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 15 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 24 Jan 2023.
 """
 
 class Sequence:
     """ Manage a single sequence """
-    def __init__(self, seqid, descr, seq):
-        self.__seqid = seqid
+    def __init__(self, id, descr, seq):
+        self.__id = id
         self.__descr = descr
         self.__seq = seq
         return
     
     @property
-    def seqid(self):
-        return self.__seqid
+    def id(self):
+        return self.__id
     
     @property
     def description(self):
@@ -30,6 +30,17 @@ class Sequence:
     def seq(self):
         return(self.__seq)
 
-    def set_seqid(self, new_id):
-        self.__seqid = new_id
+    @id.setter
+    def id(self, new_id):
+        self.__id = new_id
+        return
+    
+    @description.setter
+    def description(self, new_descr):
+        self.__descr = new_descr
+        return
+
+    @seq.setter
+    def seq(self, new_seq):
+        self.__seq = new_seq
         return

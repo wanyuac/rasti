@@ -7,7 +7,7 @@ Dependencies: BLAST+, BioPython, Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 23 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 24 Jan 2023.
 """
 
 import os
@@ -64,7 +64,7 @@ class BLAST:
         output_tsv.close()  # Leaves an empty file if len(out) = 0
         return out
     
-    def import(self, subject_name, input_dir):
+    def read(self, subject_name, input_dir):  # Methods or parameters cannot be named with the reserved key work 'import'.
         """ Load an existing BLAST output from input_dir for sample s """
         tsv = os.path.join(input_dir, subject_name + '__megaBLAST.tsv')
         if os.path.exists(tsv):
