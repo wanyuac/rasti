@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 24 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 25 Jan 2023.
 """
 
 from collections import namedtuple
@@ -38,9 +38,16 @@ class Hit:
         self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft genome, a complete genome, etc) ('sseqid')
         self.__id = '@'.join([self.__query, self.__sample]) if append_sample_name else self.__query  # Hit ID. For instance, gene1@sample1.
         self.__attr = pd.DataFrame(columns = HIT_ATTRS)  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS
-        sstrand = '+' if fields[13] == 'plus' else '-'
+        if fields[13] == 'plus':
+            sstrand = '+'
+            sstart = int(fields[11])
+            send = int(fields[12])
+        else:
+            sstrand = '-'
+            sstart = int(fields[12])  # This is the only difference between coordinates used in hit tables and those in raw BLAST outputs.
+            send = int(fields[11])
         self.__attr.loc[0] = [int(fields[2]), int(fields[3]), float(fields[4]), float(fields[5]), int(fields[6]), int(fields[7]), int(fields[8]),\
-                              int(fields[9]), int(fields[10]), int(fields[11]), int(fields[12]), sstrand, fields[14], fields[15]]
+                              int(fields[9]), int(fields[10]), sstart, send, sstrand, fields[14], fields[15]]
         if append_sample_name:
             seq_descr = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), str(self.__attr['sstrand'].iloc[0])])
         else:
