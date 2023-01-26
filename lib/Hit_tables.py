@@ -80,7 +80,7 @@ class Hit_tables:
     def compile_tables(self, outdir, extended):
         """ Concatenate raw output tables of megaBLAST """
         attrs = HIT_ATTRS[0 : (len(HIT_ATTRS) - 2)] if extended else HIT_ATTRS  # Remove 'evalue' and 'bitscore' when extended = True
-        attrs = attrs.append('hslen')
+        attrs.append('hslen')
         output_tsv = open(os.path.join(outdir, 'compiled_hits.tsv'), 'w')
         print('\t'.join(['sample', 'hit', 'qseqid', 'sseqid'] + attrs), file = output_tsv)  # Print the header line
         for s, t in self.__hit_tables.items():  # Iterate through hit tables by sample names
