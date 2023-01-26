@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 24 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 26 Jan 2023.
 """
 
 import os
@@ -80,6 +80,7 @@ class Hit_tables:
     def compile_tables(self, outdir, extended):
         """ Concatenate raw output tables of megaBLAST """
         attrs = HIT_ATTRS[0 : (len(HIT_ATTRS) - 2)] if extended else HIT_ATTRS  # Remove 'evalue' and 'bitscore' when extended = True
+        attrs = attrs.append('hslen')
         output_tsv = open(os.path.join(outdir, 'compiled_hits.tsv'), 'w')
         print('\t'.join(['sample', 'hit', 'qseqid', 'sseqid'] + attrs), file = output_tsv)  # Print the header line
         for s, t in self.__hit_tables.items():  # Iterate through hit tables by sample names
