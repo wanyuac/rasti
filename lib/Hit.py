@@ -147,9 +147,9 @@ class Hit:
                         s = s.reverse_complement()
                     self.__sseq.seq = str(s)
                     if self.__append_sample_name:
-                        self.sseq.description = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp']])
+                        self.sseq.description = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp'])
                     else:
-                        self.sseq.description = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp']])
+                        self.sseq.description = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp'])
                     ext_action = f"s{start_ext_len};t{end_ext_len}"
                 else:
                     ext_action = ""
