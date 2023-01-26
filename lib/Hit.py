@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 25 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 26 Jan 2023.
 """
 
 from collections import namedtuple
@@ -130,15 +130,16 @@ class Hit:
                     sstart, send, qend, end_ext_len = self.__extend_end(sstart = sstart, send = send, sstrand = sstrand, contig = contig, qlen = qlen, qend = qend)
                 if start_ext_len > 0 or end_ext_len > 0:  # Update hit attributes
                     self.__extended = True
-                    aln_len = qend - qstart + 1  # Length of the alignment
-                    self.__attr['length'] = aln_len
-                    self.__attr['qcovhsp'] = aln_len / qlen * 100
+                    aln_len = self.__attr['length'].iloc[0] + start_ext_len + end_ext_len  # Length of the alignment overlapping the subject sequence
+                    self.__attr['length'] = aln_len  # New length of the alignment against the subject sequence
+                    self.__attr['qcovhsp'] = (qend - qstart + 1) / qlen * 100  # New query coverage (percent)
                     self.__attr['qstart'] = qstart
                     self.__attr['qend'] = qend
                     self.__attr['sstart'] = sstart
                     self.__attr['send'] = send
-                    self.__attr['mismatch'] = self.__attr['mismatch'].iloc[0] + start_ext_len + end_ext_len
-                    self.__attr['pident'] = round((aln_len - self.__attr['mismatch'].iloc[0] + self.__attr['gapopen'].iloc[0]) / aln_len * 100, 2)
+                    mismatches = self.__attr['mismatch'].iloc[0] + start_ext_len + end_ext_len
+                    self.__attr['mismatch'] = mismatches
+                    self.__attr['pident'] = round((aln_len - mismatches - self.__attr['gapopen'].iloc[0]) / aln_len * 100, 2)
                     s = contig.seq[(sstart - 1) : send]  # s is a Seq object
                     if sstrand == '-':
                         s = s.reverse_complement()
