@@ -14,6 +14,7 @@ import os
 import sys
 import subprocess
 import pandas as pd
+from copy import deepcopy
 from lib.Hit import Hit, HIT_ATTRS
 
 class Hit_tables:
@@ -79,8 +80,8 @@ class Hit_tables:
     
     def compile_tables(self, outdir, extended):
         """ Concatenate raw output tables of megaBLAST """
-        attrs = HIT_ATTRS[0 : (len(HIT_ATTRS) - 2)] if extended else HIT_ATTRS  # Remove 'evalue' and 'bitscore' when extended = True
-        attrs.append('hslen')
+        attrs = deepcopy(HIT_ATTRS[0 : (len(HIT_ATTRS) - 2)]) if extended else deepcopy(HIT_ATTRS)  # Remove 'evalue' and 'bitscore' when extended = True; Deepcopy must be used. Otherwise, HIT_ATTRS will be changed by the append method (https://stackoverflow.com/questions/24345712/python-list-of-objects-changes-when-the-object-that-was-input-in-the-append-f)
+        attrs.append('hslen')  # Use attrs = attrs + ['hslen'] if deepcopy isn't used.
         output_tsv = open(os.path.join(outdir, 'compiled_hits.tsv'), 'w')
         print('\t'.join(['sample', 'hit', 'qseqid', 'sseqid'] + attrs), file = output_tsv)  # Print the header line
         for s, t in self.__hit_tables.items():  # Iterate through hit tables by sample names
