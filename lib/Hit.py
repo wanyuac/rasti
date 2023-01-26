@@ -113,7 +113,7 @@ class Hit:
         Extend the current CDS to recover alternative start and stop codons
         Parameter: f (path to the subject FASTA file)
         """
-        if float(self.__attr['qcovhsp']) < 100:
+        if self.__attr['qcovhsp'].iloc[0] < 100:
             qstart = self.__attr['qstart'].iloc[0]
             qend = self.__attr['qend'].iloc[0]
             qlen = self.__attr['qlen'].iloc[0]
