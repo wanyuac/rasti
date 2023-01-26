@@ -15,7 +15,7 @@ from lib.Sequence import Sequence
 from Bio import SeqIO
 import pandas as pd
 
-HIT_ATTRS = ['qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']  # hslen: length of the hit in the subject sequence (without gaps)
+HIT_ATTRS = ['qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']
 CODON_TABLE_11_START = ['ATG', 'ATT', 'ATC', 'ATA', 'CTG', 'GTG', 'TTG']  # Bacterial, Archaeal and Plant Plastid Code (transl_table=11)
 CODON_TABLE_11_STOP = ['TAA', 'TAG', 'TGA']  # Sometimes the last one or two bases were missing from BLAST's output when an alternative stop codon is present.
 
@@ -37,7 +37,7 @@ class Hit:
         self.__query = fields[0]  # Name of the query sequence used for BLAST ('qseqid')
         self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft genome, a complete genome, etc) ('sseqid')
         self.__id = '@'.join([self.__query, self.__sample]) if append_sample_name else self.__query  # Hit ID. For instance, gene1@sample1.
-        self.__attr = pd.DataFrame(columns = HIT_ATTRS + ['hslen'])  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS
+        self.__attr = pd.DataFrame(columns = HIT_ATTRS + ['hslen'])  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS;   # hslen: length of the hit in the subject sequence (without gaps)
         if fields[13] == 'plus':
             sstrand = '+'
             sstart = int(fields[11])
@@ -48,11 +48,11 @@ class Hit:
             send = int(fields[11])
         hslen = send - sstart + 1  # This value may be smaller than 'length' when there are gaps in the aligned subject sequence.
         self.__attr.loc[0] = [int(fields[2]), int(fields[3]), float(fields[4]), float(fields[5]), int(fields[6]), int(fields[7]), int(fields[8]),\
-                              int(fields[9]), int(fields[10]), sstart, send, sstrand, hslen, fields[14], fields[15]]
+                              int(fields[9]), int(fields[10]), sstart, send, sstrand, fields[14], fields[15], hslen]
         if append_sample_name:
-            seq_descr = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), str(self.__attr['sstrand'].iloc[0]), f'{hslen}bp'])
+            seq_descr = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), str(self.__attr['sstrand'].iloc[0]), str(hslen) + 'bp'])
         else:
-            seq_descr = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), str(self.__attr['sstrand'].iloc[0]), f'{hslen}bp'])
+            seq_descr = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), str(self.__attr['sstrand'].iloc[0]), str(hslen) + 'bp'])
         self.__sseq = Sequence(id = self.__id, descr = seq_descr, seq = fields[16].replace('-', ''))  # Aligned part of subject sequence, with gap characters '-' removed.
         self.__extended = False  # A flag indicating whether the hit has been extended.
         self.__append_sample_name = append_sample_name
@@ -95,7 +95,8 @@ class Hit:
     def attr_values(self, extended):
         attrs = list(self.__attr.loc[0])
         if extended:
-            attrs = attrs[0 : (len(attrs) - 2)]  # E-value and bit scores are not valid for the extended hit.
+            n = len(attrs)
+            attrs = attrs[0 : (n - 3)] + [attrs[n - 1]]  # E-value and bit scores are not valid for the extended hit.
         return list(map(str, attrs))  # Apply str() to every element in attrs
 
     def write_seq(self, fasta_handle):
@@ -139,7 +140,8 @@ class Hit:
                     self.__attr['sstart'] = sstart
                     self.__attr['send'] = send
                     mismatches = self.__attr['mismatch'].iloc[0] + start_ext_len + end_ext_len
-                    self.__attr['hslen'] = send - sstart + 1
+                    hslen = send - sstart + 1
+                    self.__attr['hslen'] = hslen
                     self.__attr['mismatch'] = mismatches
                     self.__attr['pident'] = round((aln_len - mismatches - self.__attr['gapopen'].iloc[0]) / aln_len * 100, 2)
                     s = contig.seq[(sstart - 1) : send]  # s is a Seq object
@@ -147,9 +149,9 @@ class Hit:
                         s = s.reverse_complement()
                     self.__sseq.seq = str(s)
                     if self.__append_sample_name:
-                        self.sseq.description = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp'])
+                        self.sseq.description = '|'.join([self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], str(hslen) + 'bp'])
                     else:
-                        self.sseq.description = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], f'{hslen}bp'])
+                        self.sseq.description = '|'.join([self.__sample, self.__contig, str(self.__attr['sstart'].iloc[0]) + '-' + str(self.__attr['send'].iloc[0]), self.__attr['sstrand'].iloc[0], str(hslen) + 'bp'])
                     ext_action = f"s{start_ext_len};t{end_ext_len}"
                 else:
                     ext_action = ""
@@ -189,7 +191,7 @@ class Hit:
                 codon = contig.seq[(i - 3) : i]  # codon is a Bio.Seq.Seq object with a 3-base sequence
                 codon = codon.reverse_complement()  # A Bio.Seq.Seq object
                 if str(codon) in CODON_TABLE_11_START:
-                    send = i
+                    send_new = i
                     qstart_new = 1
                     ext_len = by
         return sstart_new, send_new, qstart_new, ext_len
