@@ -22,7 +22,7 @@ class Queries:
         self.__cds = list()  # Names of coding sequences
         qs = SeqIO.to_dict(SeqIO.parse(fasta, 'fasta'))
         for q, s in qs.items():  # Element 's' is a SeqRecord.
-            t = self.__extract_seq_type(s.description)
+            t = self.__extract_seq_type(s.description)  # Headers for CDSs: >seq CDS|annotations
             self.__queries[q] = Query(len = len(str(s.seq)), type = t)
             if t == 'CDS':
                 self.__cds.append(q)

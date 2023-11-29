@@ -3,7 +3,7 @@
 """
 MegaBLAST-based search of query sequences against genome assemblies.
 
-Dependencies: BLAST+, Python 3, BioPython, pandas
+Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
 
 Example command: rasti.py --query query/query_genes.fna --genomes *.fna --min_qcov 0 --pause 0.05
 
@@ -11,7 +11,7 @@ Note: this script cannot grep FASTA files for --genomes on Windows OS. Please us
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 24 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 29 Nov 2023.
 """
 
 import os
@@ -26,7 +26,7 @@ from lib.utilities import check_dir, check_file, check_assemblies, check_values
 
 def parse_arguments():
     parser = ArgumentParser(description = "Targeted gene detection for assemblies")
-    parser.add_argument('--query', '-q', dest = 'query', type = str, required = True, help = "(Mandatory) a multi-Fasta file of query DNA sequences")
+    parser.add_argument('--query', '-q', dest = 'query', type = str, required = True, help = "(Mandatory) a multi-Fasta file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations")
     parser.add_argument('--genomes', '-g', nargs = '+', dest = "genomes", type = str, required = True, help = "(Mandatory) Fasta files of genome assemblies against which queries will be searched")
     parser.add_argument('--assembly_suffix', '-s', dest = 'assembly_suffix', type = str, required = False, default = 'fna', help = "Filename extension (fasta/fna/fa, etc) to be removed from assembly filenames in order to get a sample name (Default: fna)")
     parser.add_argument('--outdir', '-o', dest = 'outdir', type =str, required = False, default = 'results', help = "Output directory (Default: results)")
