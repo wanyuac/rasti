@@ -2,7 +2,7 @@
 Release: TBC
 Latest update: 29/11/2023
 
-**R**ecursive **a**ssembly-based **s**earch for **t**arget nucleot**i**des  
+Ite**r**ative **a**ssembly-based **s**earch for **t**arget nucleot**i**des  
 
 This software is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script) and [geneDetector](https://github.com/wanyuac/geneDetector).  
 
