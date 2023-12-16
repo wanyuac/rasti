@@ -15,7 +15,7 @@ import sys
 import subprocess
 from distutils import spawn
 from collections import namedtuple
-from lib.Hit import HIT_ATTRS
+from module.Hit import HIT_ATTRS
 
 BLAST_parameters = namedtuple('BLAST_parameters', ['min_identity', 'min_qcov', 'max_evalue', 'max_hits'])
 

@@ -15,7 +15,7 @@ import sys
 import subprocess
 import pandas as pd
 from copy import deepcopy
-from lib.Hit import Hit, HIT_ATTRS
+from module.Hit import Hit, HIT_ATTRS
 
 class Hit_tables:
     """ Manage raw BLAST outputs """
