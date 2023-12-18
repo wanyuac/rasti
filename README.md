@@ -1,11 +1,9 @@
-# Rasti
+# Iterative assembly-based search for target nucleotides
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
 Release: TBC
 Latest update: 29/11/2023
-
-Ite**r**ative **a**ssembly-based **s**earch for **t**arget nucleot**i**des  
 
 This software is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script) and [geneDetector](https://github.com/wanyuac/geneDetector).  
 
