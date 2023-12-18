@@ -1,4 +1,7 @@
 # Rasti
+
+<img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
+
 Release: TBC
 Latest update: 29/11/2023
 
@@ -7,6 +10,7 @@ Ite**r**ative **a**ssembly-based **s**earch for **t**arget nucleot**i**des
 This software is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script) and [geneDetector](https://github.com/wanyuac/geneDetector).  
 
 ## Installation
+
 ```bash
 conda create -n rasti python=3.9
 conda activate rasti
@@ -18,7 +22,9 @@ git clone https://github.com/wanyuac/rasti.git
 ```
 
 ### Dependencies
+
 Recommend installing latest versions of the following dependencies. I noted versions that have been tested for `rasti` although other versions may also work.
+
 - [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)
 - [Python 3](https://www.python.org/downloads/) (v3.12.0)
 - [BioPython](https://github.com/biopython/biopython) (v1.81)
@@ -26,6 +32,7 @@ Recommend installing latest versions of the following dependencies. I noted vers
 - [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)
 
 ## Parameters
+
 ```bash
 python rasti/rasti.py --help
 
@@ -58,6 +65,7 @@ options:
 ```
 
 ## Header format of query sequences
+
 For each coding sequence (CDS):
 
 ```fasta
@@ -65,7 +73,9 @@ For each coding sequence (CDS):
 
 >seq2 CDS|annotations
 ```
+
 "CDS" is reserved for specifying a CDS. Hit will not be extended if the query is not a CDS, hence an empty output subdirectory `3_extended`.
 
 ## Etymology
+
 "Rasti" is a Lithuanian verb and noun meaning "(to) find" and "(to) discover".  
