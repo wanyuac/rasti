@@ -1,6 +1,6 @@
 # Rasti
 
-<img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 80%;" />
+<img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 75%;" />
 
 Release: TBC
 Latest update: 29/11/2023
