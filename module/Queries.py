@@ -5,9 +5,9 @@ This module defines class Queries.
 
 Dependencies: Python 3
 
-Copyright (C) 2023 Yu Wan <wanyuac@126.com>
+Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 25 Dec 2023.
+Creation: 15 Jan 2023; the latest update: 26 Dec 2023.
 """
 
 from Bio import SeqIO
@@ -17,8 +17,8 @@ Query = namedtuple('Query', ['len', 'type'])  # Length (bp) and type (CDS, IS, e
 
 class Queries:
     """
-    Parse the FASTA file of query sequences and manage its sequence data
-    This class does not store query sequences but their names and lengths.
+    This class handles the input multi-FASTA file of query sequences. It parses the FASTA file and
+    manages its sequence data. This class does not store query sequences but their names and lengths.
     """
     def __init__(self, fasta):
         self.__queries = dict()  # sequence name : Query(sequence length, feature type)
@@ -43,6 +43,11 @@ class Queries:
     def cds(self):
         """ Returns a list of the names of all query CDSs """
         return self.__cds
+    
+    @property
+    def cds_num(self):
+        """ Returns the number of CDSs """
+        return len(self.__cds)
 
     def __extract_seq_type(self, h):
         descr = h.split(' ')[1]

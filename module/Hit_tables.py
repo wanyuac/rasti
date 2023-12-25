@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 25 Dec 2023.
+Creation: 15 Jan 2023; the latest update: 26 Dec 2023.
 """
 
 import os
@@ -40,10 +40,18 @@ class Hit_tables:
         return self.__extensions
     
     @property
-    def extension_num(self):
+    def extension_count(self):  # Number of CDSs extended
         return self.__extensions.shape[0]  # Number of rows
 
-    def add_table(self, sample, hit_table):  # Parameter hit_table is a list of rows in BLAST's raw tabulated output.
+    def add_table(self, sample, hit_table):
+        """
+        This method parses megablast/blastn's tab-delimited output table of one sample (hit_table) and saves
+        it as a dictionary object {query name : hit information as stored as a Hit object}. When >1 hits are
+        present for a query sequence q, the query name follows the format '[gene name]@[sample name]:[index]',
+        otherwise, the query name follows '[gene name]@[sample name]'.
+        
+        Parameter hit_table of this method is a list of rows in BLAST's raw tabulated output.
+        """
         if hit_table != None:  # Each element of the dictionary __hit_tables stores information of rows in the raw output TSV file when the output is not empty. Otherwise, the table is None.
             ht = dict()  # A temporary hit table (dictionary)
             hits_num = dict()
@@ -53,9 +61,9 @@ class Hit_tables:
                 if q in ht.keys():  # More than one hit of the current query sequence is found by BLAST in the current sample (hit table)
                     n = hits_num[q]
                     if n == 1:  # There is only a single hit in list ht[h.query] by far.
-                        h_prev = ht[q][0]
+                        h_prev = ht[q][0]  # An Hit object
                         h_prev.id = ':'.join([h_prev.id, '1'])  # For example, 'gene1@sample1:1'
-                        ht[q] = [h_prev]
+                        ht[q] = [h_prev]  # Override ht[q][0] with an Hit object of an updated query name 'gene1@sample1:1'
                     n += 1
                     h.id = ':'.join([h.id, str(n)])  # For example, 'gene1@sample1:2' for the second hit of gene 1 in sample 1
                     ht[q].append(h)
@@ -67,22 +75,9 @@ class Hit_tables:
         else:  # No hit is generated at all from the current sample
             self.__hit_tables[sample] = None  # A record is created even if the sample does not have any hits, so we won't lose any samples in downstream analysis.
         return
-
-    def write_hit_sequences(self, query, outdir):
-        with open(os.path.join(outdir, '.'.join([query, 'fna'])), 'w') as fasta:  # Override any previous output
-            for s, t in self.__hit_tables.items():  # Iterate through hit tables by sample names
-                if t != None:
-                    if query in t.keys():
-                        for h in t[query]:  # Iterate through the list of hits
-                            h.write_seq(fasta)
-                    else:
-                        print(f"Warning (write_hit_sequences): query sequence {query} was not found in sample {s}.", file = sys.stderr)
-                else:
-                    print(f"Warning (write_hit_sequences): no query sequence was found in sample {s}.", file = sys.stderr)
-        return
     
     def compile_tables(self, outdir, extended):
-        """ Concatenate raw output tables of megaBLAST """
+        """ Concatenates raw output tables of megaBLAST and prints results into a TSV file """
         attrs = deepcopy(HIT_ATTRS[0 : (len(HIT_ATTRS) - 2)]) if extended else deepcopy(HIT_ATTRS)  # Remove 'evalue' and 'bitscore' when extended = True; Deepcopy must be used. Otherwise, HIT_ATTRS will be changed by the append method (https://stackoverflow.com/questions/24345712/python-list-of-objects-changes-when-the-object-that-was-input-in-the-append-f)
         attrs.append('hslen')  # Use attrs = attrs + ['hslen'] if deepcopy isn't used.
         output_tsv = open(os.path.join(outdir, 'compiled_hits.tsv'), 'w')
@@ -97,12 +92,28 @@ class Hit_tables:
         output_tsv.close()
         return
 
-    def extend_hits(self, subjects, cds):
+    def write_hit_sequences(self, query, outdir):
+        """ This method creates a multi-FASTA file of matched sequences of the query in subject genomes. """
+        with open(os.path.join(outdir, '.'.join([query, 'fna'])), 'w') as fasta:  # Override any previous output
+            for s, t in self.__hit_tables.items():  # Iterate through hit tables by sample names
+                if t != None:
+                    if query in t.keys():
+                        for h in t[query]:  # Iterate through the list of hits
+                            h.write_seq(fasta)
+                    else:
+                        print(f"Warning (write_hit_sequences): query sequence {query} was not found in sample {s}.", file = sys.stderr)
+                else:
+                    print(f"Warning (write_hit_sequences): no query sequence was found in sample {s}.", file = sys.stderr)
+        return
+    
+    def extend_cds_hits(self, subjects, cds):
         """
-        Extend CDSs to recover alternative start and stop codons
+        This method extends CDSs in each hit table, if any, to recover alternative start and stop codons.
+        No change applies to other queries in this table.
+
         Parameters:
-          subjects, a dictionary {genome name : path to the FASTA file}, which is generated by function check_assemblies
-          cds, a list of CDS names from a Queries object
+          - subjects, a dictionary {genome name : path to the FASTA file}, which is generated by function check_assemblies
+          - cds, a list of CDS names in a Queries object's attribute 'cds'
         """
         extension_table = []
         for genome, hit_table in self.__hit_tables.items():  # Go through every hit table

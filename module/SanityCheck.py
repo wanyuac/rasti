@@ -53,3 +53,8 @@ class SanityCheck:
             print(f"Warning: {n} cannot be greater than {v_max}. Reset its value to {v_reset}", file = sys.stderr)
             v = v_reset
         return v
+    
+    @staticmethod
+    def cd_hit_est(program_path):
+        """ Check if cd-hit-est exists """
+        return os.path.exists(program_path)
