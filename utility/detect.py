@@ -9,7 +9,7 @@ Note: this script cannot grep FASTA files for --genomes on Windows OS. Please us
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 16 Dec 2023.
+Creation: 14 Jan 2023; the latest update: 25 Dec 2023.
 """
 
 # Standard modules
@@ -23,12 +23,14 @@ from module.Queries import Queries
 from module.Hit_tables import Hit_tables
 from module.SanityCheck import SanityCheck
 
-def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_evalue, max_match_num, pause, job_reload):
+def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_evalue, max_match_num, \
+           pause, job_reload, cd_hit_est, threads):
     # 1. Environmental settings and sanity checks ###############
     out_dirs = {'root' : outdir, \
-                'blast' : os.path.join(outdir, '1_blast'), \
+                'blast' : os.path.join(outdir, '1_blast'),\
                 'parsed' : os.path.join(outdir, '2_parsed'),\
-                'extended' : os.path.join(outdir, '3_extended')}
+                'extended' : os.path.join(outdir, '3_extended'),\
+                'clusters' : os.path.join(outdir, '4_clusters')}
     for d in out_dirs.values():
         SanityCheck.output_dir(d)
     if SanityCheck.output_file(f = query, message = True):
@@ -72,13 +74,15 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
         hit_tables.write_hit_sequences(query = q, outdir = parsed_out_dir)
 
     # 4. Extend hits of CDSs to recover alternative start and stop codons ###############
-    cds = queries.cds
-    if len(cds) > 0:
-        ext_out_dir = out_dirs['extended']
-        hit_tables.extend_hits(subjects = genomes, cds = cds)
-        if hit_tables.extension_num > 0:
-            hit_tables.compile_tables(outdir = ext_out_dir, extended = True)
-        hit_tables.write_extension_records(ext_out_dir)  # Creates an empty file 'no_extended_hit' in the output directory if no hit is extended.
-        for q in queries.query_names:
-            hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)
+    # Implement the following block regardless of whether len(queries.cds) > 0 to keep the workflow consistent across different settings (with/withoout CDS)
+    ext_out_dir = out_dirs['extended']
+    hit_tables.extend_hits(subjects = genomes, cds = queries.cds)
+    if hit_tables.extension_num > 0:
+        hit_tables.compile_tables(outdir = ext_out_dir, extended = True)
+    hit_tables.write_extension_records(ext_out_dir)  # Creates an empty file 'no_extended_hit' in the output directory if no hit is extended.
+    for q in queries.query_names:
+        hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)
+    
+    # 5. Cluster hits using cd-hit-est ###############
+            
     return

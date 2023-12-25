@@ -20,9 +20,9 @@ from module.Hit import HIT_ATTRS
 BLAST_parameters = namedtuple('BLAST_parameters', ['min_identity', 'min_qcov', 'max_evalue', 'max_hits'])
 
 class BLAST:
-    """ Execute BLAST tasks with the same query FASTA file """
+    """ Implements a BLAST job to query sequences in a multi-FASTA file against a genome assembly """
     def __init__(self, query_fasta, min_identity, min_qcov, max_evalue, max_hits):
-        """ Initiate private properties """
+        """ Initiates private properties """
         self.__query_fasta = query_fasta  # Fasta file of query sequences
         self.__params = BLAST_parameters(str(min_identity), str(min_qcov), max_evalue, str(max_hits))
         return

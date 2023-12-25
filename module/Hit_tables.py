@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 26 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 25 Dec 2023.
 """
 
 import os
@@ -18,7 +18,10 @@ from copy import deepcopy
 from module.Hit import Hit, HIT_ATTRS
 
 class Hit_tables:
-    """ Manage raw BLAST outputs """
+    """
+    Manage raw BLAST outputs as a dictionary {genome : BLAST's output table, either with CDS hits
+    extended to recover alternative start/stop codons}
+    """
     def __init__(self):
         self.__hit_tables = dict()  # A nested dictionary {genome : table} of raw BLAST outputs, where 'table' is a dictionary of lists of Hit objects
         self.__extensions = pd.DataFrame(columns = ['Hit', 'Genome', 'Action'])

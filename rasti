@@ -6,7 +6,7 @@ Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 18 Dec 2023; the latest update: 18 Dec 2023.
+Creation: 18 Dec 2023; the latest update: 25 Dec 2023.
 """
 
 from argparse import ArgumentParser
@@ -21,13 +21,15 @@ def parse_arguments():
     detect_parser.add_argument('--query', '-q', dest = 'query', type = str, required = True, help = "(Mandatory) a multi-Fasta file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations")
     detect_parser.add_argument('--genomes', '-g', nargs = '+', dest = "genomes", type = str, required = True, help = "(Mandatory) Fasta files of genome assemblies against which queries will be searched")
     detect_parser.add_argument('--assembly_suffix', '-s', dest = 'assembly_suffix', type = str, required = False, default = 'fna', help = "Filename extension (fasta/fna/fa, etc) to be removed from assembly filenames in order to get a sample name (Default: fna)")
-    detect_parser.add_argument('--outdir', '-o', dest = 'outdir', type =str, required = False, default = 'results', help = "Output directory (Default: results)")
+    detect_parser.add_argument('--outdir', '-o', dest = 'outdir', type = str, required = False, default = 'results', help = "Output directory (Default: results)")
     detect_parser.add_argument('--min_identity', '-mi', dest = 'min_identity', type = float, default= 80.0, required = False, help = "Minimum percent nucleotide identity for BLAST to identify a match (Default: 80.0; range: 70-100)")
     detect_parser.add_argument('--min_qcov', '-mq', dest = 'min_qcov', type = float, default = 80.0, required = False, help = "Minimum percent query coverage for BLAST to identify a match (Default: 80.0; range: 0-100)")
     detect_parser.add_argument('--max_evalue', '-me', dest = 'max_evalue', type = str, default = '1e-5', required = False, help = "Maximum E-value for BLAST to identify a match (Default: 1e-5)")
     detect_parser.add_argument('--max_match_num', '-mh', dest = 'max_match_num', type = int, default = 5, required = False, help = "Maximum number of matches reported by BLAST for each query sequence (Default: 5; Range: 1-500)")
     detect_parser.add_argument('--pause', '-p', dest = 'pause', type = float, default = 0.2, required = False, help = "Number of seconds to hold between consecutive BLAST searches (Default: 0.2; range: 0-60)")
     detect_parser.add_argument('--reload', '-r', dest = 'reload', action = 'store_true', help = "Flag this option to enable importing existing BLAST outputs without reruning the BLAST search (Option --pause is disabled in this case)")
+    detect_parser.add_argument('--cd_hit_est', '-c', dest = 'cd_hit_est', type = str, default = 'cd-hit-est', required = False, help = "Full path of program cd-hit-est")
+    detect_parser.add_argument('--threads', '-t', dest = "threads", type = int, default = 1, required = False, help = "Number of threads")
 
     # Sub-command 'call_alleles'
     # Sub-command 'aln2mut'
@@ -39,7 +41,7 @@ def main():
     if args.subcommand == 'detect':
         detect(query = args.query, genomes = args.genomes, assembly_suffix = args.assembly_suffix, outdir = args.outdir, \
                min_identity = args.min_identity, min_qcov = args.min_qcov, max_evalue = args.max_evalue, max_match_num = args.max_match_num, \
-               pause = args.pause, job_reload = args.reload)
+               pause = args.pause, job_reload = args.reload, cd_hit_est = args.cd_hit_est, threads = args.threads)
 
 
 if __name__ == '__main__':

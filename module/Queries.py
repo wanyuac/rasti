@@ -7,7 +7,7 @@ Dependencies: Python 3
 
 Copyright (C) 2023 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 23 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 25 Dec 2023.
 """
 
 from Bio import SeqIO
@@ -16,9 +16,12 @@ from collections import namedtuple
 Query = namedtuple('Query', ['len', 'type'])  # Length (bp) and type (CDS, IS, etc)
 
 class Queries:
-    """ Parse the FASTA file of query sequences and manage its sequence data """
+    """
+    Parse the FASTA file of query sequences and manage its sequence data
+    This class does not store query sequences but their names and lengths.
+    """
     def __init__(self, fasta):
-        self.__queries = dict()
+        self.__queries = dict()  # sequence name : Query(sequence length, feature type)
         self.__cds = list()  # Names of coding sequences
         qs = SeqIO.to_dict(SeqIO.parse(fasta, 'fasta'))
         for q, s in qs.items():  # Element 's' is a SeqRecord.
@@ -38,6 +41,7 @@ class Queries:
     
     @property
     def cds(self):
+        """ Returns a list of the names of all query CDSs """
         return self.__cds
 
     def __extract_seq_type(self, h):
@@ -51,6 +55,7 @@ class Queries:
         return self.__queries[q].type  # Value type: string
 
     def write_query_lengths(self, tsv):
+        """ Prints a summary TSV file of query sequences in Stage 2 of function detect """
         f = open(tsv, 'w')
         f.write('\t'.join(["Query", "Type", "Length"]) + '\n')
         for i, q in self.__queries.items():
