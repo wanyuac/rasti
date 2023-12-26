@@ -41,13 +41,9 @@ class CDHITEST_cluster_file:
                     identity = "100.00"
                     representative = "Y"  # yes
                 else:  # Non-representative sequences
-                    if args.e:  # cd-hit-est: 'at 1:1569:1:1569/+/100.00%'; cd-hit: 'at 100.00%'.
-                        identity = fields[-1].split("/")[-1]  # remove stuff like "at 1:1569:1:1569/+/"
-                    else:
-                        identity = fields[-1].split(" ")[-1]  # remove 'at '
+                    identity = fields[-1].split("/")[-1]  # remove stuff like "at 1:1569:1:1569/+/"
                     identity = fields[-1][0 : -1]  # drop the % sign
                     representative = "N"  # no
-
                 print("\t".join([cluster_id, index, seqid, seqlen, identity, representative]), file = f)
         f.close()
         return
