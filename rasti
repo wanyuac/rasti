@@ -29,7 +29,7 @@ def parse_arguments():
     detect_parser.add_argument('--pause', '-p', dest = 'pause', type = float, default = 0.2, required = False, help = "Number of seconds to hold between consecutive BLAST searches (Default: 0.2; range: 0-60)")
     detect_parser.add_argument('--reload', '-r', dest = 'reload', action = 'store_true', help = "Flag this option to enable importing existing BLAST outputs without reruning the BLAST search (Option --pause is disabled in this case)")
     detect_parser.add_argument('--cd_hit_est', '-c', dest = 'cd_hit_est', type = str, default = 'cd-hit-est', required = False, help = "Full path of program cd-hit-est")
-    detect_parser.add_argument('--threads', '-t', dest = "threads", type = int, default = 1, required = False, help = "Number of threads")
+    detect_parser.add_argument('--threads', '-t', dest = "threads", type = str, default = '1', required = False, help = "Number of threads")
 
     # Sub-command 'call_alleles'
     # Sub-command 'aln2mut'

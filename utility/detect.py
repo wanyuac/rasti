@@ -101,11 +101,11 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
         hit_tables.extend_cds_hits(subjects = genomes, cds = queries.cds)
         if hit_tables.extension_count > 0:
             hit_tables.compile_tables(outdir = ext_out_dir, extended = True)  # Compile updated hit tables into a large table
+            for q in queries.query_names:
+                hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)  # Save updated sequences of hits
             sseq_dir = ext_out_dir  # Input directory (matched subject sequences) of the next stage
         else:
             sseq_dir = parsed_out_dir
-        for q in queries.query_names:
-            hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)  # Save updated sequences of hits
     hit_tables.write_extension_records(ext_out_dir)  # Create an empty file 'no_extended_hit' in the output directory if no hit is extended.
     
     # 5. Cluster hits using cd-hit-est ###############
@@ -115,7 +115,7 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
         for q in queries.query_names:
             f = os.path.join(sseq_dir, '.'.join([q, 'fna']))
             if os.path.exists(f):
-                subprocess.run([cd_hit_est, '-i', f, '-o', q + '_clusters.fna', \
+                subprocess.run([cd_hit_est, '-i', f, '-o', os.path.join(cluster_out_dir, q + '_representatives.fna'), \
                                 '-c', '1.0', '-s', '1.0', '-g', '1', '-d', '0', '-T', threads])
             else:
                 print(f"Error at sequence clustering: FASTA file of subject sequences matching query {q} was not found. Skipped this file.")

@@ -11,7 +11,7 @@ Creation: 15 Jan 2023; the latest update: 26 Jan 2023.
 """
 
 from collections import namedtuple
-from lib.Sequence import Sequence
+from module.Sequence import Sequence
 from Bio import SeqIO
 import pandas as pd
 

@@ -2,9 +2,9 @@
 """
 Utility class SanityCheck for checking runtime settings
 
-Copyright (C) 2023 Yu Wan <wanyuac@126.com>
+Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 16 Dec 2023.
+Creation: 14 Jan 2023; the latest update: 26 Dec 2023.
 """
 
 import os
@@ -19,7 +19,7 @@ class SanityCheck:
         if os.path.exists(d):
             print(f"Directory {d} exists.", file = sys.stdout)
         else:
-            print(f"Create directory {d}.", file = sys.stdout)
+            print(f"Create directory {d}", file = sys.stdout)
             os.makedirs(d)
         return
 
