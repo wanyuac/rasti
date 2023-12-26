@@ -9,7 +9,7 @@ Note: this script cannot grep FASTA files for --genomes on Windows OS. Please us
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 26 Dec 2023.
+Creation: 14 Jan 2023; the latest update: 27 Dec 2023.
 """
 
 # Standard modules
@@ -23,6 +23,7 @@ from module.BLAST import BLAST
 from module.Queries import Queries
 from module.Hit_tables import Hit_tables
 from module.SanityCheck import SanityCheck
+from module.CDHITEST_cluster_file import CDHITEST_cluster_file
 
 def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_evalue, max_match_num, \
            pause, job_reload, cd_hit_est, threads):
@@ -111,14 +112,27 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
     # 5. Cluster hits using cd-hit-est ###############
     """ Run cd-hit-est for each FASTA file of matched subject sequences """
     cluster_out_dir = out_dirs['clusters']
+    clustr_success = []  # Names of query sequences whose hits were successfully clustered.
     if SanityCheck.cd_hit_est(cd_hit_est):
         for q in queries.query_names:
             f = os.path.join(sseq_dir, '.'.join([q, 'fna']))
             if os.path.exists(f):
                 subprocess.run([cd_hit_est, '-i', f, '-o', os.path.join(cluster_out_dir, q + '_representatives.fna'), \
                                 '-c', '1.0', '-s', '1.0', '-g', '1', '-d', '0', '-T', threads])
+                clustr_file = os.path.join(cluster_out_dir, q + '_representatives.fna.clstr')
+                if os.path.exists(clustr_file):
+                    clustr_success.append(q)
+                    cdhit_output = CDHITEST_cluster_file(clustr_file)
+                    cdhit_output.tabulate(os.path.join(cluster_out_dir, q + '_clusters.tsv'))
+                else:
+                    print(f"Error (sequence clustering): clustering output {clustr_file} was not found.")
             else:
-                print(f"Error at sequence clustering: FASTA file of subject sequences matching query {q} was not found. Skipped this file.")
+                print(f"Error (sequence clustering): FASTA file of subject sequences matching query {q} was not found. Skipped this file.")
     else:
-        print(f"Error at sequencing clustering: cd-hit-est could not be found at {cd_hit_est}. No clustering was performed.")
+        print(f"Error (sequence clustering): cd-hit-est could not be found at {cd_hit_est}. No clustering was performed.")
+
+    # Write names of successfully processed query sequences for other sub-commands
+    with open(os.path.join(cluster_out_dir, 'clustered_queries.txt'), 'w') as success_record:
+        for q in clustr_success:
+            success_record.write(q + '\n')
     return
