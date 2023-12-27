@@ -4,7 +4,7 @@ Utility class SanityCheck for checking runtime settings
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 26 Dec 2023.
+Creation: 14 Jan 2023; the latest update: 27 Dec 2023.
 """
 
 import os
@@ -53,8 +53,3 @@ class SanityCheck:
             print(f"Warning: {n} cannot be greater than {v_max}. Reset its value to {v_reset}", file = sys.stderr)
             v = v_reset
         return v
-    
-    @staticmethod
-    def cd_hit_est(program_path):
-        """ Check if cd-hit-est exists """
-        return os.path.exists(program_path)

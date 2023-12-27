@@ -6,7 +6,7 @@ Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 18 Dec 2023; the latest update: 25 Dec 2023.
+Creation: 18 Dec 2023; the latest update: 27 Dec 2023.
 """
 
 from argparse import ArgumentParser
@@ -41,7 +41,7 @@ def main():
     if args.subcommand == 'detect':
         detect(query = args.query, genomes = args.genomes, assembly_suffix = args.assembly_suffix, outdir = args.outdir, \
                min_identity = args.min_identity, min_qcov = args.min_qcov, max_evalue = args.max_evalue, max_match_num = args.max_match_num, \
-               pause = args.pause, job_reload = args.reload, cd_hit_est = args.cd_hit_est, threads = args.threads)
+               pause = args.pause, job_reload = args.reload, cd_hit_est_path = args.cd_hit_est, threads = args.threads)
 
 
 if __name__ == '__main__':

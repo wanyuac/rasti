@@ -100,8 +100,6 @@ class Hit_tables:
                     if query in t.keys():
                         for h in t[query]:  # Iterate through the list of hits
                             h.write_seq(fasta)
-                    else:
-                        print(f"Warning (write_hit_sequences): query sequence {query} was not found in sample {s}.", file = sys.stderr)
                 else:
                     print(f"Warning (write_hit_sequences): no query sequence was found in sample {s}.", file = sys.stderr)
         return
