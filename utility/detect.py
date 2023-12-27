@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 MegaBLAST-based search of query sequences against genome assemblies.
 Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
