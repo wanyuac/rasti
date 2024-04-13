@@ -5,9 +5,9 @@ This module defines class Hit.
 
 Dependencies: Python 3
 
-Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
+Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 26 Jan 2023.
+Creation: 15 Jan 2023; the latest update: 13 Apr 2024.
 """
 
 from collections import namedtuple
@@ -96,7 +96,7 @@ class Hit:
         attrs = list(self.__attr.loc[0])
         if extended:
             n = len(attrs)
-            attrs = attrs[0 : (n - 3)] + [attrs[n - 1]]  # E-value and bit scores are not valid for the extended hit.
+            attrs = attrs[0 : (n - 3)] + [attrs[n - 1]]  # E-value and bit scores from the original BLAST result are not valid for the extended hit.
         return list(map(str, attrs))  # Apply str() to every element in attrs
 
     def write_seq(self, fasta_handle):

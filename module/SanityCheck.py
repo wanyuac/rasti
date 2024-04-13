@@ -2,7 +2,7 @@
 """
 Utility class SanityCheck for checking runtime settings
 
-Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
+Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
 Creation: 14 Jan 2023; the latest update: 27 Dec 2023.
 """

@@ -5,7 +5,7 @@ Example command
     rasti.py --query query/query_genes.fna --genomes *.fna --min_qcov 0 --pause 0.05
 Note: this script cannot grep FASTA files for --genomes on Windows OS. Please use Windows's Linux subsystem to run this script.
 
-Copyright (C) 2023-2024 Yu Wan <wanyuac@126.com>
+Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
 Creation: 14 Jan 2023; the latest update: 27 Dec 2023.
 """
@@ -50,7 +50,7 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
     delay_sec = pause  # Number of seconds to hold between consecutive BLAST searches
     delay_iterations = (delay_sec > 0 and delay_sec < 60)
 
-    # 2. Iteratively run megaBLAST through genomes ###############
+    # 2. Iteratively run megaBLAST through assemblies (genomes) ###############
     """
     This stage searches query sequences in a multi-FASTA file against each subject genome using megablast/blastn
     and saves each output table (hit_table) as an element in object hit_tables's attribute dictionary
@@ -101,9 +101,9 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
             hit_tables.compile_tables(outdir = ext_out_dir, extended = True)  # Compile updated hit tables into a large table
             for q in queries.query_names:
                 hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)  # Save updated sequences of hits
-            sseq_dir = ext_out_dir  # Input directory (matched subject sequences) of the next stage
+            sseq_dir = ext_out_dir  # Input directory (matched subject sequences) of the next stage (cd-hit-est)
         else:
-            sseq_dir = parsed_out_dir
+            sseq_dir = parsed_out_dir  # In this case, cd-hit-est will take inputs from 2_parsed rather than 3_extended.
     hit_tables.write_extension_records(ext_out_dir)  # Create an empty file 'no_extended_hit' in the output directory if no hit is extended.
     
     # 5. Cluster hits using cd-hit-est ###############
