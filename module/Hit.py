@@ -13,7 +13,7 @@ Creation: 15 Jan 2023; the latest update: 13 Apr 2024.
 from collections import namedtuple
 from module.Sequence import Sequence
 from Bio import SeqIO
-import pandas as pd
+import pandas
 
 HIT_ATTRS = ['qlen', 'slen', 'pident', 'qcovhsp', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'sstrand', 'evalue', 'bitscore']
 CODON_TABLE_11_START = ['ATG', 'ATT', 'ATC', 'ATA', 'CTG', 'GTG', 'TTG']  # Bacterial, Archaeal and Plant Plastid Code (transl_table=11)
@@ -37,7 +37,7 @@ class Hit:
         self.__query = fields[0]  # Name of the query sequence used for BLAST ('qseqid')
         self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft genome, a complete genome, etc) ('sseqid')
         self.__id = '@'.join([self.__query, self.__sample]) if append_sample_name else self.__query  # Hit ID. For instance, gene1@sample1.
-        self.__attr = pd.DataFrame(columns = HIT_ATTRS + ['hslen'])  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS;   # hslen: length of the hit in the subject sequence (without gaps)
+        self.__attr = pandas.DataFrame(columns = HIT_ATTRS + ['hslen'])  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS;   # hslen: length of the hit in the subject sequence (without gaps)
         if fields[13] == 'plus':
             sstrand = '+'
             sstart = int(fields[11])

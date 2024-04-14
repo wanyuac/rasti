@@ -44,6 +44,9 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
     n = len(genomes)  # Number of subject FASTA files
     if n > 0:
         print(f"Number of genomes: {n}", file = sys.stdout)
+        with open(os.path.join(out_dirs['root'], 'genome_list.txt'), 'w') as genome_list:  # Create a list of genome names for sub-command 'call_alleles'
+            for g in genomes.keys():
+                genome_list.write(g + '\n')
     else:
         print("Error: none of input genomes exists.", file = sys.stderr)
         sys.exit(1)

@@ -34,7 +34,7 @@ class SanityCheck:
     @staticmethod
     def fasta_files(fs, suf = '.fna'):
         """ Check existance of genome assemblies and extract sample names from filenames """
-        genomes = dict()
+        genomes = dict()  # {genome name : path to its FASTA file}
         for f in fs:
             if os.path.exists(f):
                 i = os.path.basename(f).replace(suf, '')

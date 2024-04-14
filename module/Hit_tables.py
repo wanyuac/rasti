@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
 """
-This module defines class Hits.
+This module defines class Hit_tables, which parses BLAST's outputs across samples and store them as individual tables of hits.
 
-Dependencies: Python 3
+Dependencies: Python 3, pandas
 
 Copyright (C) 2023 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 13 Apr 2024.
+Creation: 15 Jan 2023; the latest update: 14 Apr 2024.
 """
 
 import os
 import sys
 import subprocess
-import pandas as pd
+import pandas
 from copy import deepcopy
 from module.Hit import Hit, HIT_ATTRS
 
@@ -24,7 +24,7 @@ class Hit_tables:
     """
     def __init__(self):
         self.__hit_tables = dict()  # A nested dictionary {genome : table} of raw BLAST outputs, where 'table' is a dictionary of lists of Hit objects
-        self.__extensions = pd.DataFrame(columns = ['Hit', 'Genome', 'Action'])
+        self.__extensions = pandas.DataFrame(columns = ['Hit', 'Genome', 'Action'])
         return
     
     @property
@@ -46,11 +46,14 @@ class Hit_tables:
     def add_table(self, sample, hit_table):
         """
         This method parses megablast/blastn's tab-delimited output table of one sample (hit_table) and saves
-        it as a dictionary object {query name : hit information as stored as a Hit object}. When >1 hits are
-        present for a query sequence q, the query name follows the format '[gene name]@[sample name]:[index]',
-        otherwise, the query name follows '[gene name]@[sample name]'.
+        it as a dictionary object {query name : hit information as stored as a Hit object}.
         
-        Parameter hit_table of this method is a list of rows in BLAST's raw tabulated output.
+        This method deals with multiple hits of the same query sequence. Specifically, when >1 hits are present
+        for a query sequence q, the query name follows the format '[gene name]@[sample name]:[index]'; otherwise,
+        the query name follows '[gene name]@[sample name]'.
+        
+        Parameter hit_table of this method is a list of rows in BLAST's raw tabulated output. This list is the output of the serach method
+        of class BLAST.
         """
         if hit_table != None:  # Each element of the dictionary __hit_tables stores information of rows in the raw output TSV file when the output is not empty. Otherwise, the table is None.
             ht = dict()  # A temporary hit table (dictionary)
@@ -133,7 +136,7 @@ class Hit_tables:
                         new_hit_list.append(hit)
                     self.__hit_tables[genome][query] = new_hit_list
         """ Create a simple table for an overview of all extended CDSs. This information is also added to compiled_hits_extended.tsv. """
-        self.__extensions = pd.DataFrame(data = extension_table, columns = ['Hit', 'Genome', 'Action'])
+        self.__extensions = pandas.DataFrame(data = extension_table, columns = ['Hit', 'Genome', 'Action'])
         return
 
     def write_extension_records(self, outdir):
