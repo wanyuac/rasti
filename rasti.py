@@ -52,7 +52,7 @@ def main():
                min_identity = args.min_identity, min_qcov = args.min_qcov, max_evalue = args.max_evalue, max_match_num = args.max_match_num, \
                pause = args.pause, job_reload = args.reload, cd_hit_est_path = args.cd_hit_est, threads = args.threads)
     elif args.subcommand == 'call_alleles':
-        call_alleles(hit_table = args.compiled_hit_table, representatives_dir = args.representatives_dir, outdir = args.outdir)
+        call_alleles(hit_table = args.compiled_hit_table, representatives_dir = args.representatives_dir, genomes = args.genome_list, outdir = args.outdir)
 
 
 if __name__ == '__main__':

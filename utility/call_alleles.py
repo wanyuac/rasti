@@ -17,7 +17,7 @@ import pandas
 from module.SanityCheck import SanityCheck
 from module.Allele_caller import Allele_caller
 
-def call_alleles(hit_table, representatives_dir, outdir):
+def call_alleles(hit_table, representatives_dir, genomes, outdir):
     SanityCheck.output_dir(outdir)
     if os.path.exists(hit_table):
         compiled_hit_table = pandas.read_csv(hit_table, sep = '\t')  # Import a compiled hit table, such as compiled_hits_with_extensions.tsv in output subdirectory 3_extended.
@@ -25,11 +25,15 @@ def call_alleles(hit_table, representatives_dir, outdir):
         if os.path.exists(representatives_dir):
             allele_assignments = dict()
             allele_caller = Allele_caller(indir = representatives_dir, outdir = outdir)
+            allele_assignments = pandas.DataFrame(columns = ['query', 'allele', 'cluster', 'index', 'seqid', 'length', 'identity', 'representative'])
             for q in queries:
-                alleles = allele_caller.determine_alleles(query = q, compiled_hit_table = compiled_hit_table, outdir = outdir)
-                allele_assignments[q] = alleles
-                allele_caller.create_allele_db(query = q, allele_assignment = alleles, outdir = outdir)
-            updated_hit_table = allele_caller.update_compiled_hit_table(compiled_hit_table, allele_assignments, outdir)
+                q_alleles = allele_caller.determine_alleles(query = q, compiled_hit_table = compiled_hit_table)
+                allele_assignments = pandas.concat([allele_assignments, q_alleles], ignore_index = True)  # Concatenate data frames
+                allele_caller.create_allele_db(query = q, allele_assignment = q_alleles, outdir = outdir)
+                updated_hit_table = allele_caller.update_compiled_hit_table(compiled_hit_table, allele_assignments)
+            allele_assignments.to_csv(os.path.join(outdir, 'allele_assignments.tsv'), sep = '\t', index = False)  # Save all allele assignments in a TSV file
+            updated_hit_table.to_csv(os.path.join(outdir, 'compiled_hit_table_updated.tsv'), sep = '\t', index = False)
+            allele_caller.create_hit_matrix(updated_hit_table, genomes, outdir)
         else:
             print(f"Error: the directory of input FASTA files of representative hit sequences does not exist.", file = sys.stderr)
             sys.exit(1)
