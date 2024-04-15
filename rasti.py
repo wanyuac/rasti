@@ -12,6 +12,7 @@ Creation: 18 Dec 2023; the latest update: 15 Apr 2024.
 from argparse import ArgumentParser
 from utility.detect import detect
 from utility.call_alleles import call_alleles
+from utility.aln2mut import aln2mut
 
 def parse_arguments():
     parser = ArgumentParser(description = "Targeted gene detection for assemblies")
@@ -42,6 +43,14 @@ def parse_arguments():
     caller_parser.add_argument('--outdir', '-o', dest = 'outdir', type = str, required = False, default = 'output/5_alleles', help = "Output directory (Default: output/5_alleles)")
 
     # Sub-command 'aln2mut'
+    aln2mut_parser = subparsers.add_parser(name = 'aln2mut', help = "Identify mutations from a FASTA-format sequence alignment")
+    aln2mut_parser.add_argument('--input', '-i', dest = 'input', type = str, required = True, help = "Input alignment in the FASTA format")
+    aln2mut_parser.add_argument('--outdir', '-o', dest = 'outdir', type = str, required = False, default = '.', help = "Output directory (Default: current working directory")
+    aln2mut_parser.add_argument('--output_prefix', '-p', dest = 'output_prefix', type = str, required = False, default = 'mutations', help = "Prefix for output files (Default: mutations)")
+    aln2mut_parser.add_argument('--ref_name', '-r', dest = 'ref_name', type = str, required = True, help = "Name of the reference sequence in the alignment")
+    aln2mut_parser.add_argument('--list', '-l', dest = 'list', action = 'store_true', help = "Create a list of alterations in a conventional format (e.g., W25N)")
+    aln2mut_parser.add_argument('--var', '-v', dest = 'var', action = 'store_true', help = "Create a FASTA-format alignment file of variable sites only")
+
     return parser.parse_args()
 
 
@@ -53,6 +62,8 @@ def main():
                pause = args.pause, job_reload = args.reload, cd_hit_est_path = args.cd_hit_est, threads = args.threads)
     elif args.subcommand == 'call_alleles':
         call_alleles(hit_table = args.compiled_hit_table, representatives_dir = args.representatives_dir, sample_list = args.sample_list, outdir = args.outdir)
+    elif args.subcommand == 'aln2mut':
+        aln2mut(aln_file = args.input, outdir = args.outdir, output_prefix = args.output_prefix, ref_name = args.ref_name, vcf_to_list = args.list, var_aln = args.var)
 
 
 if __name__ == '__main__':
