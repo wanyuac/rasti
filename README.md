@@ -2,78 +2,129 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
-Release: TBC
-Latest update: 29/11/2023
+Release: `rasti v0.0.1`
+Latest documentation update: 15 Apr 2024
 
-This software is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script) and [geneDetector](https://github.com/wanyuac/geneDetector).  
 
-## Installation
+
+## 1. Overview
+
+Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) implements three sequential utilities:
+
+* `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;
+
+* `call_alleles`: assigning allele identifiers to hits of each query sequence and generating a matrix of allelic presence-absence across samples;
+
+* `aln2mut`: identifying mutations from the global alignment of a gene's alleles.
+
+Before using rasti, users are recommended to reduce query redundancy by assigning similar queries (for example, using [CD-HIT-EST](https://github.com/weizhongli/cdhit) to cluster sequences based on a minimum nucleotide identity and coverage of 80%) into clusters (often refer to as genes) and selecting representative sequences of these clusters for sequence search, which is the same as [SRST2](https://github.com/katholt/srst2) and [ARIBA](https://github.com/sanger-pathogens/ariba) do.
+
+### Dependencies
+
+Rasti does not strongly rely on particular versions of dependencies. Here, I list versions that have been tested for `rasti` during its development.
+
+* [Python 3](https://www.python.org/downloads/) (v3.9.19)
+- [BioPython](https://github.com/biopython/biopython) (v1.83)
+- [Pandas](https://pandas.pydata.org/) (v2.2.2)
+- [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)
+- [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)
+  
+  
+
+## 2. Installation
 
 ```bash
 conda create -n rasti python=3.9
 conda activate rasti
-conda install -c bioconda blast
 conda install -c conda-forge biopython
-conda install -c anaconda pandas
-conda install -c bioconda cd-hit
-git clone https://github.com/wanyuac/rasti.git
+conda install -c conda-forge pandas
+conda install -c conda-forge -c bioconda cd-hit
+conda install -c conda-forge -c bioconda blast
+git clone https://github.com/wanyuac/rasti.git  # cd to your preferred directory first
 ```
 
-### Dependencies
 
-Recommend installing latest versions of the following dependencies. I noted versions that have been tested for `rasti` although other versions may also work.
 
-- [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)
-- [Python 3](https://www.python.org/downloads/) (v3.12.0)
-- [BioPython](https://github.com/biopython/biopython) (v1.81)
-- [Python module pandas](https://pandas.pydata.org/) (v2.1.3)
-- [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)
+## 3. Preparing a FASTA file of query sequences
 
-## Parameters
+Header format of each coding sequence (CDS):
+    >seq1 CDS
 
-```bash
-python rasti/rasti.py --help
+or
+    >seq2 CDS|annotations
 
-usage: rasti.py [-h] --query QUERY --genomes GENOMES [GENOMES ...] [--assembly_suffix ASSEMBLY_SUFFIX] [--outdir OUTDIR] [--min_identity MIN_IDENTITY] [--min_qcov MIN_QCOV]
-                [--max_evalue MAX_EVALUE] [--max_match_num MAX_MATCH_NUM] [--pause PAUSE] [--reload]
+Here, keyword "CDS" is reserved for specifying a CDS. Hit will not be extended to correct partial matches of alternative start/stop codons if the query is not a CDS, hence an empty output subdirectory `3_extended`.
 
-Targeted gene detection for assemblies
 
-options:
-  -h, --help            show this help message and exit
-  --query QUERY, -q QUERY
-                        (Mandatory) a multi-Fasta file of query DNA sequences
-  --genomes GENOMES [GENOMES ...], -g GENOMES [GENOMES ...]
-                        (Mandatory) Fasta files of genome assemblies against which queries will be searched
-  --assembly_suffix ASSEMBLY_SUFFIX, -s ASSEMBLY_SUFFIX
-                        Filename extension (fasta/fna/fa, etc) to be removed from assembly filenames in order to get a sample name (Default: fna)
-  --outdir OUTDIR, -o OUTDIR
-                        Output directory (Default: results)
-  --min_identity MIN_IDENTITY, -mi MIN_IDENTITY
-                        Minimum percent nucleotide identity for BLAST to identify a match (Default: 80.0; range: 70-100)
-  --min_qcov MIN_QCOV, -mq MIN_QCOV
-                        Minimum percent query coverage for BLAST to identify a match (Default: 80.0; range: 0-100)
-  --max_evalue MAX_EVALUE, -me MAX_EVALUE
-                        Maximum E-value for BLAST to identify a match (Default: 1e-5)
-  --max_match_num MAX_MATCH_NUM, -mh MAX_MATCH_NUM
-                        Maximum number of matches reported by BLAST for each query sequence (Default: 5; Range: 1-500)
-  --pause PAUSE, -p PAUSE
-                        Seconds to be paused between BLAST searches (Default: 0.2; range: 0-60)
-  --reload, -r          Flag this option to enable importing existing BLAST outputs without reruning the BLAST search (Option --pause is disabled in this case)
-```
 
-## Header format of query sequences
+## 4. `rasti.py detect` method
 
-For each coding sequence (CDS):
+### Parameters
 
-```fasta
->seq1 CDS
+* `--query` / `-q`: mandatory input: a multi-FASTA file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations and separated from other annotations with a '|' character in this FASTA file. For example, '>seq CDS|other annotations';
 
->seq2 CDS|annotations
-```
+* `--assemblies` / `-a`: mandatory input: FASTA files of assemblies against which queries will be searched;
 
-"CDS" is reserved for specifying a CDS. Hit will not be extended if the query is not a CDS, hence an empty output subdirectory `3_extended`.
+* `--assembly_suffix` / `-s`: filename extension (fasta/fna/fa, etc) to be removed from assembly filenames in order to get a sample name (default: "fna");
 
-## Etymology
+* `--outdir` / `-o`: output directory (default: "output");
 
-"Rasti" is a Lithuanian verb and noun meaning "(to) find" and "(to) discover".  
+* `--min_identity` / `-mi`: minimum percent nucleotide identity for BLAST to identify a match (default: 90.0; range: 70-100);
+
+* `--min_qcov` / `-mq`: minimum percent query coverage for BLAST to identify a match (default: 90.0; range: 0-100);
+
+* `--max_evalue` / `-me`: maximum E-value for BLAST to identify a match (default: 1e-5);
+
+* `--max_match_num` / `-mh`: maximum number of matches reported by BLAST for each query sequence (default: 5; Range: 1-500);
+
+* `--pause` / `-p`: number of seconds to hold between consecutive BLAST searches (default: 0.2; range: 0-60);
+
+* `--reload` / `-r`: flag this option to enable importing existing BLAST outputs without reruning the BLAST search — the pause is disabled in this case;
+
+* `--cd_hit_est` / `-c`: full path of program cd-hit-est;
+
+* `--threads` / `-t`: number of threads for BLAST and CD-HIT-EST.
+
+
+
+## 5. `rasti.py call_alleles` method
+
+### Parameters
+
+* `--compiled_hit_table` / `-t`: compiled hits in the outputs of method `detect`;
+
+* `--sample_list` / `-s`: a test file listing names of sample. It can be "sample_list.txt" in the output directory of `rasti detect;
+
+* `--representatives_dir` / `-r`: directory of input FASTA files of representatives allele sequences (`*_representatives.fna`);
+
+* `--outdir` / `-o`: output directory (default: "output/5_alleles").
+
+
+
+## 6. `rasti.py aln2mut` method
+
+### Parameters
+
+* `--input` / `-i`: input alignment in the FASTA format;
+
+* `--outdir` / `-o`: output directory (default: current working directory);
+
+* `--output_prefix` / `-p`: prefix for output files (default: "mutations");
+
+* `--ref_name` / `-r`: name of the reference sequence in the alignment;
+
+* `--list` / `-l`: create a list of alterations in a conventional format (*e.g.*, W25N);
+
+* `--var` / `-v`: create a FASTA-format alignment file of variable sites only.
+
+
+
+## 7. Etymology
+
+"Rasti" is a Lithuanian verb and noun meaning "(to) find" and "(to) discover".
+
+
+
+## 8. Development history
+
+Rasti is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script), [geneDetector](https://github.com/wanyuac/geneDetector), [PAMmaker](https://github.com/wanyuac/PAMmaker), and [aln2mut](https://github.com/wanyuac/aln2mut).
