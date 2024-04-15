@@ -3,11 +3,11 @@
 """
 This module defines class Queries.
 
-Dependencies: Python 3
+Dependencies: Python 3, BioPython
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 26 Dec 2023.
+Creation: 15 Jan 2023; the latest update: 15 Apr 2024.
 """
 
 from Bio import SeqIO

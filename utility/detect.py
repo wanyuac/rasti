@@ -1,9 +1,9 @@
 """
-MegaBLAST-based search of query sequences against genome assemblies.
+MegaBLAST-based search of query sequences against assemblies.
 Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
 Example command
-    rasti.py --query query/query_genes.fna --genomes *.fna --min_qcov 0 --pause 0.05
-Note: this script cannot grep FASTA files for --genomes on Windows OS. Please use Windows's Linux subsystem to run this script.
+    rasti.py --query query/query_genes.fna --assemblies *.fna --min_qcov 0 --pause 0.05
+Note: this script cannot grep FASTA files for --assemblies on Windows OS. Please use Windows's Linux subsystem to run this script.
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
@@ -22,7 +22,7 @@ from module.Hit_tables import Hit_tables
 from module.SanityCheck import SanityCheck
 from module.CD_HIT_EST import CD_HIT_EST
 
-def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_evalue, max_match_num, \
+def detect(query, assemblies, assembly_suffix, outdir, min_identity, min_qcov, max_evalue, max_match_num, \
            pause, job_reload, cd_hit_est_path, threads):
     # 1. Environmental settings and sanity checks ###############
     out_dirs = {'root' : outdir, \
@@ -40,24 +40,25 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
         blast.check_executives()
     else:
         sys.exit(1)
-    genomes = SanityCheck.fasta_files(fs = genomes, suf = '.' + assembly_suffix)  # Return: {genome name : Path of the assembly's FASTA file}
-    n = len(genomes)  # Number of subject FASTA files
+    suffix = assembly_suffix if assembly_suffix.startswith('.') else '.' + assembly_suffix
+    samples = SanityCheck.fasta_files(fs = assemblies, suf = suffix)  # Return: {sample name : Path of the assembly's FASTA file}
+    n = len(samples)  # Number of subject FASTA files
     if n > 0:
-        print(f"Number of genomes: {n}", file = sys.stdout)
-        with open(os.path.join(out_dirs['root'], 'genome_list.txt'), 'w') as genome_list:  # Create a list of genome names for sub-command 'call_alleles'
-            for g in genomes.keys():
-                genome_list.write(g + '\n')
+        print(f"Number of samples: {n}", file = sys.stdout)
+        with open(os.path.join(out_dirs['root'], 'sample_list.txt'), 'w') as sample_list:  # Create a list of sample names for sub-command 'call_alleles'
+            for s in samples.keys():
+                sample_list.write(s + '\n')
     else:
-        print("Error: none of input genomes exists.", file = sys.stderr)
+        print("Error: none of input samples exists.", file = sys.stderr)
         sys.exit(1)
     delay_sec = pause  # Number of seconds to hold between consecutive BLAST searches
     delay_iterations = (delay_sec > 0 and delay_sec < 60)
 
-    # 2. Iteratively run megaBLAST through assemblies (genomes) ###############
+    # 2. Iteratively run megaBLAST through assemblies (samples) ###############
     """
-    This stage searches query sequences in a multi-FASTA file against each subject genome using megablast/blastn
+    This stage searches query sequences in a multi-FASTA file against each subject sample using megablast/blastn
     and saves each output table (hit_table) as an element in object hit_tables's attribute dictionary
-    {target genome : hit table}. Each hit table is a dictionary {query name : one line of hit as stored in a Hit
+    {target sample : hit table}. Each hit table is a dictionary {query name : one line of hit as stored in a Hit
     object}.
     """
     blast_out_dir = out_dirs['blast']
@@ -65,22 +66,22 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
     queries.write_query_lengths(tsv = os.path.join(out_dirs['root'], 'query_lengths.tsv'))  # Save a two-column table of lengths of query sequences
     hit_tables = Hit_tables()  # Initialise a Hit_tables object
     if job_reload:
-        for g in genomes.keys():
-            hit_tables.add_table(sample = g, hit_table = blast.read(subject_name = g, input_dir = blast_out_dir))  # Import existing BLAST outputs
+        for s in samples.keys():
+            hit_tables.add_table(sample = s, hit_table = blast.read(subject_name = s, input_dir = blast_out_dir))  # Import existing BLAST outputs
     elif delay_iterations:  # Do fresh BLAST searches
-        for g, fasta in genomes.items():
-            hit_tables.add_table(sample = g, hit_table = blast.search(subject_name = g, subject_fasta = fasta, outdir = blast_out_dir))  # Method blast.search may return None when no hit is found in a subject genome.
+        for s, fasta in samples.items():
+            hit_tables.add_table(sample = s, hit_table = blast.search(subject_name = s, subject_fasta = fasta, outdir = blast_out_dir))  # Method blast.search may return None when no hit is found in a subject sample.
             sleep(delay_sec)
     else:
-        for g, fasta in genomes.items():
-            hit_tables.add_table(sample = g, hit_table = blast.search(subject_name = g, subject_fasta = fasta, outdir = blast_out_dir))
+        for s, fasta in samples.items():
+            hit_tables.add_table(sample = s, hit_table = blast.search(subject_name = s, subject_fasta = fasta, outdir = blast_out_dir))
     
     # 3. Parse and compile BLAST results ###############
     """
-    This stage compiles hit tables in object hit_tables into one large table by adding names of subject genomes as keys
+    This stage compiles hit tables in object hit_tables into one large table by adding names of subject samples as keys
     for hit tables. The outcomes of this stage, namely, results of the compile_tables method of hit_tables, consist of
     a TSV file 'compiled_hits.tsv' (in this stage's output directory '2_parsed') and multi-FASTA files '[query name].fna'
-    of matched query sequences in subject genomes.
+    of matched query sequences in subject samples.
     """
     parsed_out_dir = out_dirs['parsed']
     hit_tables.compile_tables(outdir = parsed_out_dir, extended = False)  # Compile BLAST outputs across all samples into one TSV file
@@ -92,14 +93,14 @@ def detect(query, genomes, assembly_suffix, outdir, min_identity, min_qcov, max_
     This stage first walks through each hit in the compiled hit table and recovers alternative start/stop codons in each match
     of CDSs if applicable. No change applies to hits of non-CDS queries. Then the program recompile hit tables and prints the
     compiled hit table into a TSV file 'compiled_hits.tsv' in this stage's output directory '3_extended' and with the same
-    column names as those in '2_parsed/compiled_hits.tsv'. In addition, matched query sequences in subject genomes are
+    column names as those in '2_parsed/compiled_hits.tsv'. In addition, matched query sequences in subject samples are
     regenerated from updated hit tables and saved in this directory.
 
     Only an empy file 'no_extended_hit' is created in '3_extended' when no CDS hit is extended.
     """
     ext_out_dir = out_dirs['extended']
     if queries.cds_num > 0:
-        hit_tables.extend_cds_hits(subjects = genomes, cds = queries.cds)
+        hit_tables.extend_cds_hits(subjects = samples, cds = queries.cds)
         if hit_tables.extension_count > 0:
             hit_tables.compile_tables(outdir = ext_out_dir, extended = True)  # Compile updated hit tables into a large table
             for q in queries.query_names:

@@ -4,7 +4,7 @@ Utility class SanityCheck for checking runtime settings
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 27 Dec 2023.
+Creation: 14 Jan 2023; the latest update: 15 Apr 2024.
 """
 
 import os
@@ -33,15 +33,15 @@ class SanityCheck:
 
     @staticmethod
     def fasta_files(fs, suf = '.fna'):
-        """ Check existance of genome assemblies and extract sample names from filenames """
-        genomes = dict()  # {genome name : path to its FASTA file}
+        """ Check existance of assemblies and extract sample names from filenames """
+        samples = dict()  # {sample name : path to its FASTA file}
         for f in fs:
             if os.path.exists(f):
                 i = os.path.basename(f).replace(suf, '')
-                genomes[i] = f
+                samples[i] = f
             else:
-                print(f"Warning: Subject genome {f} does not exist and will not be used for sequence search.", file = sys.stderr)
-        return genomes
+                print(f"Warning: Subject assembly {f} does not exist and will not be used for sequence search.", file = sys.stderr)
+        return samples
 
     @staticmethod
     def parameter_range(v, v_min = 70.0, v_max = 100.0, v_reset = 70.0, n = 'min_identity'):

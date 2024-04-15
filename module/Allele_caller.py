@@ -3,7 +3,7 @@ Class Allele_caller for assigning allele identifiers for each gene / sequence cl
 
 Copyright (C) 2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Apr 2024; the latest update: 14 Apr 2024.
+Creation: 14 Apr 2024; the latest update: 15 Apr 2024.
 """
 
 import os
@@ -11,6 +11,8 @@ import sys
 import pandas
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+
+NOT_DETECTED_SIGN = '__'  # The characters representing absence of a certain gene.
 
 class Allele_caller:
     """ Assign allele identifiers to a gene or sequence cluster. """
@@ -83,6 +85,34 @@ class Allele_caller:
         allele_hit_mapping = allele_hit_mapping.rename(columns = {'seqid' : 'hit'})
         return pandas.merge(compiled_hit_table, allele_hit_mapping, on = 'hit', how = 'left')  # The merge method works in the same way as the merge function in R.
     
-    def create_hit_matrix(self, updated_hit_table, genomes, outdir):
+    def create_hit_matrix(self, updated_hit_table, sample_list, queries, outdir):
         """" Create a genetic matrix with alleles (hits) """
+        with open(sample_list, 'r') as gl:
+            samples = gl.read().splitlines()
+            samples.sort()
+        n_queries = len(queries)  # Number of queries
+        output_tsv_path = os.path.join(outdir, 'allele_matrix.tsv')
+        output_tsv = open(output_tsv_path, 'w')
+        output_tsv.write('\t'.join(['sample'] + queries) + '\n')  # Write the header line into the output TSV file
+        samples_with_hits = updated_hit_table['sample'].unique().tolist()
+        for s in samples:
+            new_row = [s]  # Initiate a new row with its first column
+            if s in samples_with_hits:
+                """
+                Use a two-step subsetting method instead of "updated_hit_table[(updated_hit_table['sample'] == s) & (updated_hit_table['qseqid'] == q)]" to save time.
+                Operator '&' performs element-wise logical AND through rows/columns (in the same way as '&' in R), which differs from the scalar logical operator 'and'.
+                """
+                s_hits = updated_hit_table[updated_hit_table['sample'] == s]
+                for q in queries:  # Populate columns in the current row (of sample s)
+                    s_q_hits = s_hits[s_hits['qseqid'] == q]
+                    if len(s_q_hits.index) > 0:  # There is >=1 hit.
+                        s_q_alleles = s_q_hits['allele'].unique().tolist()
+                        s_q_alleles.sort()
+                        new_row.append(','.join(s_q_alleles))
+                    else:
+                        new_row.append(NOT_DETECTED_SIGN)
+            else:  # This sample has no match to any query.
+                new_row += [NOT_DETECTED_SIGN for x in range(n_queries)]
+            output_tsv.write('\t'.join(new_row) + '\n')
+        output_tsv.close()
         return

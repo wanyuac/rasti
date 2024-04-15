@@ -33,9 +33,9 @@ class Hit:
         sstart (start of alignment in subject), send (end of alignment in subject), sstrand (subject Strand), evalue (expect value), bitscore (bit score).
         """
         fields = hit_line.split('\t') if hit_line != None else [None] * 17
-        self.__sample = sample  # Name of the subject genome
+        self.__sample = sample  # Name of the subject sample
         self.__query = fields[0]  # Name of the query sequence used for BLAST ('qseqid')
-        self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft genome, a complete genome, etc) ('sseqid')
+        self.__contig = fields[1]  # Name of the subject sequence (a contig in a draft assembly, a finished-grade assembly, etc) ('sseqid')
         self.__id = '@'.join([self.__query, self.__sample]) if append_sample_name else self.__query  # Hit ID. For instance, gene1@sample1.
         self.__attr = pandas.DataFrame(columns = HIT_ATTRS + ['hslen'])  # A single-row data frame with column names starting from 'qlen' to 'bitscore' in HIT_ATTRS;   # hslen: length of the hit in the subject sequence (without gaps)
         if fields[13] == 'plus':

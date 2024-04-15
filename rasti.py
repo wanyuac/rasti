@@ -6,7 +6,7 @@ Dependencies: BLAST+, Python 3, BioPython, pandas, cd-hit
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 18 Dec 2023; the latest update: 13 Apr 2024.
+Creation: 18 Dec 2023; the latest update: 15 Apr 2024.
 """
 
 from argparse import ArgumentParser
@@ -18,10 +18,10 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title = "Sub-commands of rasti", dest = "subcommand")
 
     # Sub-command 'detect'
-    detect_parser = subparsers.add_parser(name = 'detect', help = "Detect target nucleotide sequences in genome assemblies")
+    detect_parser = subparsers.add_parser(name = 'detect', help = "Detect target nucleotide sequences in genome/metagenome assemblies")
     detect_parser.add_argument('--query', '-q', dest = 'query', type = str, required = True, help = "Mandatory input: a multi-FASTA file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations \
                                and separated from other annotations with a \'|\' character in this FASTA file. For example, \'>seq CDS|other annotations\'")
-    detect_parser.add_argument('--assemblies', '-a', nargs = '+', dest = "assemblies", type = str, required = True, help = "Mandatory input: FASTA files of genome assemblies against which queries will be searched")
+    detect_parser.add_argument('--assemblies', '-a', nargs = '+', dest = "assemblies", type = str, required = True, help = "Mandatory input: FASTA files of genome/metagenome assemblies against which queries will be searched")
     detect_parser.add_argument('--assembly_suffix', '-s', dest = 'assembly_suffix', type = str, required = False, default = 'fna', help = "Filename extension (fasta/fna/fa, etc) to be removed from assembly filenames in order to get a sample name (Default: fna)")
     detect_parser.add_argument('--outdir', '-o', dest = 'outdir', type = str, required = False, default = 'output', help = "Output directory (Default: output)")
     detect_parser.add_argument('--min_identity', '-mi', dest = 'min_identity', type = float, default= 90.0, required = False, help = "Minimum percent nucleotide identity for BLAST to identify a match (Default: 90.0; range: 70-100)")
@@ -36,7 +36,7 @@ def parse_arguments():
     # Sub-command 'call_alleles'
     caller_parser = subparsers.add_parser(name = 'call_alleles', help = "Call alleles from results of \'rasti detect\', namely, BLAST search and sequence clustering")
     caller_parser.add_argument('--compiled_hit_table', '-t', dest = 'compiled_hit_table', type = str, required = True, help = "Input: compiled hits in the outputs of sub-command 'detect'")
-    caller_parser.add_argument('--genome_list', '-g', dest = 'genome_list', type = str, required = True, help = "Input: a test file listing names of genomes. It can be \'genome_list.txt\' in the output directory of \'rasti detect\'.")
+    caller_parser.add_argument('--sample_list', '-g', dest = 'sample_list', type = str, required = True, help = "Input: a test file listing names of sample. It can be \'sample_list.txt\' in the output directory of \'rasti detect\'.")
     caller_parser.add_argument('--representatives_dir', '-r', dest = 'representatives_dir', type = str, required = True,\
                                help = "Input: directory of input FASTA files of representatives allele sequences (*_representatives.fna).")
     caller_parser.add_argument('--outdir', '-o', dest = 'outdir', type = str, required = False, default = 'output/5_alleles', help = "Output directory (Default: output/5_alleles)")
@@ -48,11 +48,11 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     if args.subcommand == 'detect':
-        detect(query = args.query, genomes = args.assemblies, assembly_suffix = args.assembly_suffix, outdir = args.outdir, \
+        detect(query = args.query, assemblies = args.assemblies, assembly_suffix = args.assembly_suffix, outdir = args.outdir, \
                min_identity = args.min_identity, min_qcov = args.min_qcov, max_evalue = args.max_evalue, max_match_num = args.max_match_num, \
                pause = args.pause, job_reload = args.reload, cd_hit_est_path = args.cd_hit_est, threads = args.threads)
     elif args.subcommand == 'call_alleles':
-        call_alleles(hit_table = args.compiled_hit_table, representatives_dir = args.representatives_dir, genomes = args.genome_list, outdir = args.outdir)
+        call_alleles(hit_table = args.compiled_hit_table, representatives_dir = args.representatives_dir, sample_list = args.sample_list, outdir = args.outdir)
 
 
 if __name__ == '__main__':
