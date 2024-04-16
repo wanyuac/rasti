@@ -3,7 +3,7 @@
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
 Release: `rasti v0.0.1`
-Latest documentation update: 15 Apr 2024
+Latest documentation update: 16 Apr 2024
 
 
 
@@ -33,6 +33,8 @@ Rasti does not strongly rely on particular versions of dependencies. Here, I lis
 
 ## 2. Installation
 
+[Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) and [mamba ](https://github.com/mamba-org/mamba) are recommended ways for installing rasti.
+
 ```bash
 conda create -n rasti python=3.9
 conda activate rasti
@@ -45,23 +47,42 @@ git clone https://github.com/wanyuac/rasti.git  # cd to your preferred directory
 
 
 
-## 3. Preparing a FASTA file of query sequences
+## 3. Quick start
 
-Header format of each coding sequence (CDS):
-    >seq1 CDS
+This example assumes `queries.fna` has been prepared (see the next section about preparation of query FASTA files) and a rasti's conda environment has been activated.
 
-or
-    >seq2 CDS|annotations
+```bash
+cd ~/analysis  # Or any other working directory
 
-Here, keyword "CDS" is reserved for specifying a CDS. Hit will not be extended to correct partial matches of alternative start/stop codons if the query is not a CDS, hence an empty output subdirectory `3_extended`.
+~/bin/rasti/rasti.py detect --query input/queries.fna --assemblies input/ERR*.fna --assembly_suffix fna --outdir output/test --min_identity 90 --min_qcov 90 --cd_hit_est ~/anaconda3/envs/rasti/bin/cd-hit-est --threads 8
+
+~/bin/rasti/rasti.py call_alleles --compiled_hit_table output/test/3_extended/compiled_hits_with_extensions.tsv --sample_list output/test/sample_list.txt --queries input/queries.fna --representatives_dir output/test/4_clusters --outdir output/test/5_alleles
+
+mkdir output/test/6_mutations
+~/bin/rasti/rasti.py aln2mut --input output/test/5_alleles/gene1_alleles.fna --outdir output/test/6_mutations --output_prefix gene1_mutations --ref_name gene1 --list --var
+```
 
 
 
-## 4. `rasti.py detect` method
+## 4. Preparing inputs
+
+Rasti takes as input two types of FASTA files: one type for assemblies and the other type for query sequences.
+
+### FASTA files of assemblies
+
+Rasti assumes filenames of assemblies' FASTA files follow the format [sample name].[fna/fasta]. For example, `sample1.fna` is a valid filename.
+
+### A FASTA file of query sequences
+
+This input is a multi-FASTA file with a header format in which each coding sequence (CDS) is indicated by keyword "CDS" at the beginning of the annotation field in the sequence header. For example, such sequence headers can be `>seq1 CDS` and `>seq2 CDS|annotations`, and so forth. Hit will not be extended to correct partial matches of alternative start/stop codons if the query is not a CDS, hence an empty output subdirectory `3_extended`.
+
+
+
+## 5. `rasti.py detect` method
 
 ### Parameters
 
-* `--query` / `-q`: mandatory input: a multi-FASTA file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations and separated from other annotations with a '|' character in this FASTA file. For example, '>seq CDS|other annotations';
+* `--queries` / `-q`: mandatory input: a multi-FASTA file of query DNA sequences. For coding sequences, add CDS to the beginning of sequence annotations and separated from other annotations with a '|' character in this FASTA file. For example, '>seq CDS|other annotations';
 
 * `--assemblies` / `-a`: mandatory input: FASTA files of assemblies against which queries will be searched;
 
@@ -84,10 +105,10 @@ Here, keyword "CDS" is reserved for specifying a CDS. Hit will not be extended t
 * `--cd_hit_est` / `-c`: full path of program cd-hit-est;
 
 * `--threads` / `-t`: number of threads for BLAST and CD-HIT-EST.
+  
+  
 
-
-
-## 5. `rasti.py call_alleles` method
+## 6. `rasti.py call_alleles` method
 
 ### Parameters
 
@@ -95,13 +116,15 @@ Here, keyword "CDS" is reserved for specifying a CDS. Hit will not be extended t
 
 * `--sample_list` / `-s`: a test file listing names of sample. It can be "sample_list.txt" in the output directory of `rasti detect;
 
+* `--queries` / `-q`: the same multi-FASTA file of query DNA sequences used for the `detect` method;
+
 * `--representatives_dir` / `-r`: directory of input FASTA files of representatives allele sequences (`*_representatives.fna`);
 
 * `--outdir` / `-o`: output directory (default: "output/5_alleles").
+  
+  
 
-
-
-## 6. `rasti.py aln2mut` method
+## 7. `rasti.py aln2mut` method
 
 ### Parameters
 
@@ -116,15 +139,15 @@ Here, keyword "CDS" is reserved for specifying a CDS. Hit will not be extended t
 * `--list` / `-l`: create a list of alterations in a conventional format (*e.g.*, W25N);
 
 * `--var` / `-v`: create a FASTA-format alignment file of variable sites only.
+  
+  
 
-
-
-## 7. Etymology
+## 8. Etymology
 
 "Rasti" is a Lithuanian verb and noun meaning "(to) find" and "(to) discover".
 
 
 
-## 8. Development history
+## 9. Development history
 
 Rasti is a combination and enhancement of [NITREc](https://github.com/wanyuac/NITREc/tree/master/Script), [geneDetector](https://github.com/wanyuac/geneDetector), [PAMmaker](https://github.com/wanyuac/PAMmaker), and [aln2mut](https://github.com/wanyuac/aln2mut).

@@ -3,7 +3,7 @@ Class Allele_caller for assigning allele identifiers for each gene / sequence cl
 
 Copyright (C) 2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Apr 2024; the latest update: 15 Apr 2024.
+Creation: 14 Apr 2024; the latest update: 16 Apr 2024.
 """
 
 import os
@@ -57,25 +57,34 @@ class Allele_caller:
             sys.exit(1)
         return allele_assignment
     
-    def create_allele_db(self, query, allele_assignment, outdir):
+    def create_allele_db(self, query_name, queries_fasta, allele_assignment, outdir):
         """ Rename representative sequences in clusters of query's hits according to the allele assignment from method determine_alleles """
-        input_fasta = os.path.join(self.__input_dir, query + '_representatives.fna')
+        input_fasta = os.path.join(self.__input_dir, query_name + '_representatives.fna')
         cluster_representatives = allele_assignment.loc[allele_assignment['representative'] == 'Y']  # The input FASTA file only contains representative sequences.
-        if os.path.exists(input_fasta):
+        if os.path.exists(input_fasta) and os.path.exists(queries_fasta):
             records_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
-            output_fasta = open(os.path.join(outdir, query + '_alleles.fna'), 'w')
+            output_fasta = open(os.path.join(outdir, query_name + '_alleles.fna'), 'w')
+            # Convert names of representative sequences into allele names
             for seqid in records_dict.keys():
                 allele_info = cluster_representatives.loc[cluster_representatives['seqid'] == seqid]
                 new_seq_name = allele_info['allele'].iloc[0]
                 c = allele_info['cluster'].iloc[0]
                 seq_record = records_dict[seqid]
-                new_seq_descr = seq_record.description[len(seq_record.id) + 1 : ]  # Sequence description is the header line, so this command removes seq_record.id and the following white space from the header.
+                new_seq_descr = seq_record.description[(len(seq_record.id) + 1) : ]  # Sequence description is the header line, so this command removes seq_record.id and the following white space from the header.
                 new_seq_descr = f'{new_seq_descr}|{seqid}|cd-hit-est_cluster:{c}'
                 output_fasta.write(f'>{new_seq_name} {new_seq_descr}\n')
                 output_fasta.write(str(seq_record.seq) + '\n')
+            # Add the reference allele into the database if it is not in representative sequences. This is for the convenience of the 'rasti.py aln2mut' method and protein-level comparisons.
+            if not query_name in records_dict.keys():  # Here, query_name actually is the name of the reference allele.
+                queries_dict = SeqIO.to_dict(SeqIO.parse(queries_fasta, 'fasta'))
+                ref_allele = queries_dict[query_name]
+                new_seq_descr = ref_allele.description[(len(query_name) + 1) : ]
+                new_seq_descr = f'{new_seq_descr}|query_name|reference_allele'
+                output_fasta.write(f'>{query_name} {new_seq_descr}\n')
+                output_fasta.write(str(ref_allele.seq) + '\n')
             output_fasta.close()
         else:
-            print(f"Error: FASTA file {input_fasta} does not exist.", file = sys.stderr)
+            print(f"Error: FASTA files {input_fasta} and/or {queries_fasta} do not exist.", file = sys.stderr)
             sys.exit(1)
         return
 

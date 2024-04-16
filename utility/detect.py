@@ -107,7 +107,7 @@ def detect(query, assemblies, assembly_suffix, outdir, min_identity, min_qcov, m
                 hit_tables.write_hit_sequences(query = q, outdir = ext_out_dir)  # Save updated sequences of hits
             sseq_dir = ext_out_dir  # Input directory (matched subject sequences) of the next stage (cd-hit-est)
         else:
-            sseq_dir = parsed_out_dir  # In this case, cd-hit-est will take inputs from 2_parsed rather than 3_extended.
+            sseq_dir = parsed_out_dir  # In this case, cd-hit-est will take inputs from 2_parsed rather than 3_extended, depending on sseq_dir.
     hit_tables.write_extension_records(ext_out_dir)  # Create an empty file 'no_extended_hit' in the output directory if no hit is extended.
     
     # 5. Cluster hits using cd-hit-est ###############
