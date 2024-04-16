@@ -126,6 +126,8 @@ This input is a multi-FASTA file with a header format in which each coding seque
 
 ## 7. `rasti.py aln2mut` method
 
+This method works on both nucleotide and amino acid sequence alignments. Because of synonymous mutations, it is desirable to cluster identical translated sequences (namely, protein sequences of 100% amino acid identity and coverage) using [`CD-HIT`](https://github.com/weizhongli/cdhit) to remove alignment redundancy (namely, run `rasti.py aln2mut` only through representative amino acid sequences from CD-HIT) and ensure the resulting amino acid alignment always shows variation.
+
 ### Parameters
 
 * `--input` / `-i`: input alignment in the FASTA format;
