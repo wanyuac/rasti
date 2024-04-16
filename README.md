@@ -9,25 +9,35 @@ Latest documentation update: 16 Apr 2024
 
 ## 1. Overview
 
-Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) implements three sequential utilities:
+Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) implements three sequential utilities to screen assemblies for bacterial/archaeal/plant plastid genes:  
 
-* `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;
-
-* `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;
-
-* `aln2mut` (alignment to mutations): identifying mutations from the global alignment of a gene's alleles.
+* `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;  
+* `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;  
+* `aln2mut` (alignment to mutations): identifying mutations from the global alignment of a gene's alleles.  
 
 Before using rasti, users are recommended to reduce query redundancy by assigning similar queries (for example, using [CD-HIT-EST](https://github.com/weizhongli/cdhit) to cluster sequences based on a minimum nucleotide identity and coverage of 80%) into clusters (often refer to as genes) and selecting representative sequences of these clusters for sequence search, which is the same as [SRST2](https://github.com/katholt/srst2) and [ARIBA](https://github.com/sanger-pathogens/ariba) do.
+
+
+
+### How rasti works
+
+Users are expected to run rasti's `detect`, `call_alleles`, and `aln2mut` sequentially.
+
+* `detect`: this method searches query sequences (from `queries.fna` for example) against each sample's assembly (namely, the subject) using megaBLAST and reads the result table. Then it compiles result tables across all samples into a single table. Since megaBLAST usually cannot identify the complete coding sequence (CDS) when alternative start/stop codons are present in the subject sequence compared with the query allele, rasti attempts to overcome this technical limitation by expanding each hit of a CDS in the subject sequence and searching for any alternative start/stop codons following the [Translation Codon Table 11](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?chapter=tgencodes#SG11) — for this reason, rasti only works for bacterial/archaeal/plant plastid genes but in theory, it would enable users to select the codon table for other organisms. Finally, it clusters hits of each query sequence (each "gene" or "locus") using `cd-hit-est` to identify unique alleles under 100% nucleotide identity and query coverage.
+* `call_alleles`: this method assigns a unique identifier to each allele of a gene and creates a allelic matrix that is similar to the outcome of SRST2 and ARIBA. The allele identifier is the same as the query's name if the allele is identical to the reference, and an arbitrary index 1, 2, 3, ... is added to the query's name otherwise. For example, a precise match to the reference allele of gene blaIMP-70 has an allele identifier of blaIMP-70, and identifier blaIMP-70.1 is given to an allele that differs from the reference. The method also pools all alleles of each gene (including the reference allele regardless whether it is present in any sample for the convenience of downstream mutation identification and protein-level comparisons) into one FASTA file with the name `[gene name]_alleles.fna` (*e.g.,* `blaIMP-70_alleles.fna`).
+* `aln2mut`: to use this method, users need to run their preferred alignment tool (*e.g.,* MUSCLE or Clustal Omega) to generate a global alignment of alleles for each gene of interest. Then the alignment is saved as a multi-FASTA file and used as input for `aln2mut`, which will report mutations in a VCF file, a matrix, and optionally, a list. The method may also produce an alignment of only variable sites (similar to Sanger Institute's tool [snp-sites](https://github.com/sanger-pathogens/snp-sites)).
+
+
 
 ### Dependencies
 
 Rasti does not strongly rely on particular versions of dependencies. Here, I list versions that have been tested for `rasti` during its development.
 
-* [Python 3](https://www.python.org/downloads/) (v3.9.19)
-- [BioPython](https://github.com/biopython/biopython) (v1.83)
-- [Pandas](https://pandas.pydata.org/) (v2.2.2)
-- [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)
-- [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)
+* [Python 3](https://www.python.org/downloads/) (v3.9.19)  
+* [BioPython](https://github.com/biopython/biopython) (v1.83)  
+* [Pandas](https://pandas.pydata.org/) (v2.2.2)  
+* [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)  
+* [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)  
   
   
 
@@ -68,9 +78,13 @@ mkdir output/test/6_mutations
 
 Rasti takes as input two types of FASTA files: one type for assemblies and the other type for query sequences.
 
+
+
 ### FASTA files of assemblies
 
 Rasti assumes filenames of assemblies' FASTA files follow the format `[sample name].[fna/fasta]`. For example, `sample1.fna` is a valid filename.
+
+
 
 ### A FASTA file of query sequences
 
