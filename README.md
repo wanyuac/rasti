@@ -2,7 +2,7 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
-Release: `rasti v0.0.1`
+Release: `rasti v0.0.1b`
 Latest documentation update: 16 Apr 2024
 
 
@@ -70,7 +70,7 @@ Rasti takes as input two types of FASTA files: one type for assemblies and the o
 
 ### FASTA files of assemblies
 
-Rasti assumes filenames of assemblies' FASTA files follow the format [sample name].[fna/fasta]. For example, `sample1.fna` is a valid filename.
+Rasti assumes filenames of assemblies' FASTA files follow the format `[sample name].[fna/fasta]`. For example, `sample1.fna` is a valid filename.
 
 ### A FASTA file of query sequences
 
