@@ -13,9 +13,9 @@ Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**de
 
 * `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;
 
-* `call_alleles`: assigning allele identifiers to hits of each query sequence and generating a matrix of allelic presence-absence across samples;
+* `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;
 
-* `aln2mut`: identifying mutations from the global alignment of a gene's alleles.
+* `aln2mut` (alignment to mutations): identifying mutations from the global alignment of a gene's alleles.
 
 Before using rasti, users are recommended to reduce query redundancy by assigning similar queries (for example, using [CD-HIT-EST](https://github.com/weizhongli/cdhit) to cluster sequences based on a minimum nucleotide identity and coverage of 80%) into clusters (often refer to as genes) and selecting representative sequences of these clusters for sequence search, which is the same as [SRST2](https://github.com/katholt/srst2) and [ARIBA](https://github.com/sanger-pathogens/ariba) do.
 
