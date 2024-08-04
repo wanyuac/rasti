@@ -2,14 +2,14 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
-Release: `rasti v0.0.1b`
-Latest documentation update: 16 Apr 2024
+Current release: `rasti v0.0.1`
+Latest documentation update: 4 August 2024
 
 
 
 ## 1. Overview
 
-Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) implements three sequential utilities to screen assemblies for bacterial/archaeal/plant plastid genes:  
+Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) is a Python wrapper of nucleotide BLAST that implements three sequential utilities to screen assemblies for any bacterial/archaeal/plant plastid genes:  
 
 * `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;  
 * `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;  
@@ -26,8 +26,8 @@ Users are expected to run rasti's `detect`, `call_alleles`, and `aln2mut` sequen
 * `detect`: this method searches query sequences (from `queries.fna` for example) against each sample's assembly (namely, the subject) using megaBLAST and reads the result table. Then it compiles result tables across all samples into a single table. Since megaBLAST usually cannot identify the complete coding sequence (CDS) when alternative start/stop codons are present in the subject sequence compared with the query allele, rasti attempts to overcome this technical limitation by expanding each hit of a CDS in the subject sequence and searching for any alternative start/stop codons following the [Translation Codon Table 11](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?chapter=tgencodes#SG11) — for this reason, rasti only works for bacterial/archaeal/plant plastid genes but in theory, it would enable users to select the codon table for other organisms. Finally, it clusters hits of each query sequence (each "gene" or "locus") using `cd-hit-est` to identify unique alleles under 100% nucleotide identity and query coverage.
 * `call_alleles`: this method assigns a unique identifier to each allele of a gene and creates a allelic matrix that is similar to the outcome of SRST2 and ARIBA. The allele identifier is the same as the query's name if the allele is identical to the reference, and an arbitrary index 1, 2, 3, ... is added to the query's name otherwise. For example, a precise match to the reference allele of gene blaIMP-70 has an allele identifier of blaIMP-70, and identifier blaIMP-70.1 is given to an allele that differs from the reference. The method also pools all alleles of each gene (including the reference allele regardless whether it is present in any sample for the convenience of downstream mutation identification and protein-level comparisons) into one FASTA file with the name `[gene name]_alleles.fna` (*e.g.,* `blaIMP-70_alleles.fna`).
 * `aln2mut`: to use this method, users need to run their preferred alignment tool (*e.g.,* MUSCLE or Clustal Omega) to generate a global alignment of alleles for each gene of interest. Then the alignment is saved as a multi-FASTA file and used as input for `aln2mut`, which will report mutations in a VCF file, a matrix, and optionally, a list. The method may also produce an alignment of only variable sites (similar to Sanger Institute's tool [snp-sites](https://github.com/sanger-pathogens/snp-sites)).
-
-
+  
+  
 
 ### Dependencies
 
