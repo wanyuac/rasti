@@ -2,8 +2,8 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
-Current release: `rasti v0.0.1`
-Latest documentation update: 4 August 2024
+Current release: `rasti v0.0.1`  
+Latest documentation update: 4 August 2024  
 
 
 
