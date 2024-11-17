@@ -2,20 +2,18 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
-Current release: `rasti v0.0.1`  
-Latest documentation update: 4 August 2024  
+Current release: `rasti v0.0.3`  
+Latest documentation update: 17 November 2024  
 
 
 
 ## 1. Overview
 
-Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) is a Python wrapper of nucleotide BLAST that implements three sequential utilities to screen assemblies for any bacterial/archaeal/plant plastid genes:  
+Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**des) is a Python wrapper of nucleotide BLAST (blastn or megablast) that implements three sequential utilities to screen assemblies for any bacterial/archaeal/plant plastid genes:  
 
 * `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;  
 * `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;  
 * `aln2mut` (alignment to mutations): identifying mutations from the global alignment of a gene's alleles.  
-
-Before using rasti, users are recommended to reduce query redundancy by assigning similar queries (for example, using [CD-HIT-EST](https://github.com/weizhongli/cdhit) to cluster sequences based on a minimum nucleotide identity and coverage of 80%) into clusters (often refer to as genes) and selecting representative sequences of these clusters for sequence search, which is the same as [SRST2](https://github.com/katholt/srst2) and [ARIBA](https://github.com/sanger-pathogens/ariba) do.
 
 
 
@@ -80,15 +78,21 @@ Rasti takes as input two types of FASTA files: one type for assemblies and the o
 
 
 
+### FASTA file of query sequences
+
+This input is a multi-FASTA file with a header format in which each coding sequence (CDS) is indicated by keyword "CDS" at the beginning of the annotation field in the sequence header. For example, such sequence headers can be `>seq1 CDS` and `>seq2 CDS|annotations`, and so forth. Hit will not be extended to correct partial matches of alternative start/stop codons if the query is not a CDS, hence an empty output subdirectory `3_extended`.
+
+
+
+*Note*
+
+Before using rasti, users are recommended to reduce query redundancy by assigning similar queries (for example, using [CD-HIT-EST](https://github.com/weizhongli/cdhit) to cluster sequences based on a minimum nucleotide identity and coverage of 80%) into clusters (often refer to as genes) and selecting representative sequences of these clusters for sequence search, which is the same as [SRST2](https://github.com/katholt/srst2) and [ARIBA](https://github.com/sanger-pathogens/ariba) do. Otherwise, redundant hits will be generated for similar queries (*e.g.*, different alleles of the same gene).
+
+
+
 ### FASTA files of assemblies
 
 Rasti assumes filenames of assemblies' FASTA files follow the format `[sample name].[fna/fasta]`. For example, `sample1.fna` is a valid filename.
-
-
-
-### A FASTA file of query sequences
-
-This input is a multi-FASTA file with a header format in which each coding sequence (CDS) is indicated by keyword "CDS" at the beginning of the annotation field in the sequence header. For example, such sequence headers can be `>seq1 CDS` and `>seq2 CDS|annotations`, and so forth. Hit will not be extended to correct partial matches of alternative start/stop codons if the query is not a CDS, hence an empty output subdirectory `3_extended`.
 
 
 
