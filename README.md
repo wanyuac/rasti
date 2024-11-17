@@ -2,6 +2,8 @@
 
 <img src="logo/rasti.png" alt="rasti logo" style="float: left; margin-right: 10px; width: 20%;" />
 
+[![DOI](https://zenodo.org/badge/583125611.svg)](https://doi.org/10.5281/zenodo.14175739)
+
 Current release: `rasti v0.0.3`  
 Latest documentation update: 17 November 2024  
 
@@ -14,8 +16,8 @@ Rasti (**i**terative **a**ssembly-based **s**earch for **t**arget nucleot**i**de
 * `detect`: searching query sequences against contigs in a genome/metagenome assembly — here, each query is the reference allele of a gene or locus;  
 * `call_alleles`: taking as input outcomes of the `detect` method, this utility assigns allele identifiers to hits of each query sequence and generates a matrix of allelic presence-absence across samples;  
 * `aln2mut` (alignment to mutations): identifying mutations from the global alignment of a gene's alleles.  
-
-
+  
+  
 
 ### How rasti works
 
@@ -36,8 +38,14 @@ Rasti does not strongly rely on particular versions of dependencies. Here, I lis
 * [Pandas](https://pandas.pydata.org/) (v2.2.2)  
 * [BLAST](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html) (v2.15.0)  
 * [CD-HIT](https://github.com/weizhongli/cdhit) (v4.8.1)  
-  
-  
+
+
+
+### Citation
+
+Wan Y. Rasti: iterative assembly-based search for target nucleotides. https://doi.org/10.5281/zenodo.14175739.
+
+
 
 ## 2. Installation
 
