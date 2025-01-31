@@ -7,7 +7,7 @@ Dependencies: Python 3, pandas
 
 Copyright (C) 2023 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 15 Jan 2023; the latest update: 14 Apr 2024.
+Creation: 15 Jan 2023; the latest update: 31 Jan 2025.
 """
 
 import os
@@ -125,16 +125,17 @@ class Hit_tables:
           - cds, a list of CDS names in a Queries object's attribute 'cds'
         """
         extension_table = []
-        for sample, hit_table in self.__hit_tables.items():  # Go through every hit table
-            for query, hit_list in hit_table.items():  # Go through every hit in the current hit table
-                if query in cds:
-                    new_hit_list = list()
-                    for hit in hit_list:
-                        extension_action = hit.extend_cds(f = subjects[sample])
-                        if extension_action != "":
-                            extension_table.append([hit.id, sample, extension_action])
-                        new_hit_list.append(hit)
-                    self.__hit_tables[sample][query] = new_hit_list
+        for sample, hit_table in self.__hit_tables.items():  # Go through every hit table, namely, BLAST outputs of each sample
+            if hit_table != None:
+                for query, hit_list in hit_table.items():  # Go through every hit in the current hit table
+                    if query in cds:
+                        new_hit_list = list()
+                        for hit in hit_list:
+                            extension_action = hit.extend_cds(f = subjects[sample])
+                            if extension_action != "":
+                                extension_table.append([hit.id, sample, extension_action])
+                            new_hit_list.append(hit)
+                        self.__hit_tables[sample][query] = new_hit_list  # Modify the corresponding hit table; no change to other tables that do not match these if conditions
         """ Create a simple table for an overview of all extended CDSs. This information is also added to compiled_hits_extended.tsv. """
         self.__extensions = pandas.DataFrame(data = extension_table, columns = ['Hit', 'Sample', 'Action'])
         return

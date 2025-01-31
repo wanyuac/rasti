@@ -7,7 +7,7 @@ Dependencies: BLAST+, BioPython, Python 3
 
 Copyright (C) 2023-2024 Yu Wan <wanyuac@gmail.com>
 Licensed under the GNU General Public Licence version 3 (GPLv3) <https://www.gnu.org/licenses/>.
-Creation: 14 Jan 2023; the latest update: 24 Jan 2023.
+Creation: 14 Jan 2023; the latest update: 31 Jan 2025.
 """
 
 import os
@@ -68,9 +68,13 @@ class BLAST:
         """ Load an existing BLAST output from input_dir for sample s """
         tsv = os.path.join(input_dir, subject_name + '__megaBLAST.tsv')
         if os.path.exists(tsv):
-            with open(tsv, 'r') as f:
-                out = f.read().splitlines()
-                out = out[1 : ]  # Skip the header line
+            if os.path.getsize(tsv) > 0:
+                with open(tsv, 'r') as f:
+                    out = f.read().splitlines()
+                    out = out[1 : ]  # Skip the header line
+            else:
+                print(f"Warning (blast.import): BLAST output {tsv} does not contain any hit.", file = sys.stderr)
+                out = None
         else:
             print(f"Warning (blast.import): BLAST output {tsv} was not found.", file = sys.stderr)
             out = None
@@ -79,6 +83,6 @@ class BLAST:
     def check_executives(self):
         blastn_path = spawn.find_executable("blastn")
         if blastn_path == None:
-            print("Error: could not find executives of BLAST.", file = sys.stderr)
+            print("Error (blast.check_executives): could not find executives of BLAST.", file = sys.stderr)
             sys.exit(1)
         return
